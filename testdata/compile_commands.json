@@ -1,0 +1,7 @@
+[
+  {
+    "directory": "/home/niuniu/CFG_builder/testdata",
+    "command": "clang-18 -std=gnu11 -c /home/niuniu/CFG_builder/testdata/simple.c -o /tmp/simple.o",
+    "file": "/home/niuniu/CFG_builder/testdata/simple.c"
+  }
+]

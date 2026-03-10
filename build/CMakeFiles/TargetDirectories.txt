@@ -1,0 +1,9 @@
+/home/niuniu/CFG_builder/build/CMakeFiles/intrinsics_gen.dir
+/home/niuniu/CFG_builder/build/CMakeFiles/omp_gen.dir
+/home/niuniu/CFG_builder/build/CMakeFiles/acc_gen.dir
+/home/niuniu/CFG_builder/build/CMakeFiles/RISCVTargetParserTableGen.dir
+/home/niuniu/CFG_builder/build/CMakeFiles/clang-tablegen-targets.dir
+/home/niuniu/CFG_builder/build/CMakeFiles/cfg_builder_skeleton.dir
+/home/niuniu/CFG_builder/build/CMakeFiles/cfg_builder.dir
+/home/niuniu/CFG_builder/build/CMakeFiles/edit_cache.dir
+/home/niuniu/CFG_builder/build/CMakeFiles/rebuild_cache.dir

@@ -1,0 +1,50 @@
+[
+{
+  "directory": "/home/niuniu/CFG_builder/build",
+  "command": "/usr/bin/clang++-18 -I/usr/lib/llvm-18/include -I/home/niuniu/CFG_builder/include -g -std=c++17   -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -o CMakeFiles/cfg_builder_skeleton.dir/src/app/Config.cpp.o -c /home/niuniu/CFG_builder/src/app/Config.cpp",
+  "file": "/home/niuniu/CFG_builder/src/app/Config.cpp",
+  "output": "CMakeFiles/cfg_builder_skeleton.dir/src/app/Config.cpp.o"
+},
+{
+  "directory": "/home/niuniu/CFG_builder/build",
+  "command": "/usr/bin/clang++-18 -I/usr/lib/llvm-18/include -I/home/niuniu/CFG_builder/include -g -std=c++17   -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -o CMakeFiles/cfg_builder_skeleton.dir/src/app/ToolRunner.cpp.o -c /home/niuniu/CFG_builder/src/app/ToolRunner.cpp",
+  "file": "/home/niuniu/CFG_builder/src/app/ToolRunner.cpp",
+  "output": "CMakeFiles/cfg_builder_skeleton.dir/src/app/ToolRunner.cpp.o"
+},
+{
+  "directory": "/home/niuniu/CFG_builder/build",
+  "command": "/usr/bin/clang++-18 -I/usr/lib/llvm-18/include -I/home/niuniu/CFG_builder/include -g -std=c++17   -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -o CMakeFiles/cfg_builder_skeleton.dir/src/frontend/CFGFrontendAction.cpp.o -c /home/niuniu/CFG_builder/src/frontend/CFGFrontendAction.cpp",
+  "file": "/home/niuniu/CFG_builder/src/frontend/CFGFrontendAction.cpp",
+  "output": "CMakeFiles/cfg_builder_skeleton.dir/src/frontend/CFGFrontendAction.cpp.o"
+},
+{
+  "directory": "/home/niuniu/CFG_builder/build",
+  "command": "/usr/bin/clang++-18 -I/usr/lib/llvm-18/include -I/home/niuniu/CFG_builder/include -g -std=c++17   -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -o CMakeFiles/cfg_builder_skeleton.dir/src/ast/FunctionCollector.cpp.o -c /home/niuniu/CFG_builder/src/ast/FunctionCollector.cpp",
+  "file": "/home/niuniu/CFG_builder/src/ast/FunctionCollector.cpp",
+  "output": "CMakeFiles/cfg_builder_skeleton.dir/src/ast/FunctionCollector.cpp.o"
+},
+{
+  "directory": "/home/niuniu/CFG_builder/build",
+  "command": "/usr/bin/clang++-18 -I/usr/lib/llvm-18/include -I/home/niuniu/CFG_builder/include -g -std=c++17   -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -o CMakeFiles/cfg_builder_skeleton.dir/src/cfg/CFGBuilderService.cpp.o -c /home/niuniu/CFG_builder/src/cfg/CFGBuilderService.cpp",
+  "file": "/home/niuniu/CFG_builder/src/cfg/CFGBuilderService.cpp",
+  "output": "CMakeFiles/cfg_builder_skeleton.dir/src/cfg/CFGBuilderService.cpp.o"
+},
+{
+  "directory": "/home/niuniu/CFG_builder/build",
+  "command": "/usr/bin/clang++-18 -I/usr/lib/llvm-18/include -I/home/niuniu/CFG_builder/include -g -std=c++17   -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -o CMakeFiles/cfg_builder_skeleton.dir/src/output/CFGPrinter.cpp.o -c /home/niuniu/CFG_builder/src/output/CFGPrinter.cpp",
+  "file": "/home/niuniu/CFG_builder/src/output/CFGPrinter.cpp",
+  "output": "CMakeFiles/cfg_builder_skeleton.dir/src/output/CFGPrinter.cpp.o"
+},
+{
+  "directory": "/home/niuniu/CFG_builder/build",
+  "command": "/usr/bin/clang++-18 -I/usr/lib/llvm-18/include -I/home/niuniu/CFG_builder/include -g -std=c++17   -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -o CMakeFiles/cfg_builder_skeleton.dir/src/common/Diagnostics.cpp.o -c /home/niuniu/CFG_builder/src/common/Diagnostics.cpp",
+  "file": "/home/niuniu/CFG_builder/src/common/Diagnostics.cpp",
+  "output": "CMakeFiles/cfg_builder_skeleton.dir/src/common/Diagnostics.cpp.o"
+},
+{
+  "directory": "/home/niuniu/CFG_builder/build",
+  "command": "/usr/bin/clang++-18 -I/usr/lib/llvm-18/include -I/home/niuniu/CFG_builder/include -g -std=c++17   -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -o CMakeFiles/cfg_builder.dir/src/main.cpp.o -c /home/niuniu/CFG_builder/src/main.cpp",
+  "file": "/home/niuniu/CFG_builder/src/main.cpp",
+  "output": "CMakeFiles/cfg_builder.dir/src/main.cpp.o"
+}
+]
