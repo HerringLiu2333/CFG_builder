@@ -1,0 +1,1558 @@
+{
+  "functions": [
+    {
+      "ast": {
+        "body": {
+          "attrs": {},
+          "children": [
+            {
+              "attrs": {},
+              "children": [
+                {
+                  "attrs": {},
+                  "children": [],
+                  "kind": "UnaryExprOrTypeTraitExpr",
+                  "location": "io_uring/io_uring.c:3202:23",
+                  "text": "sizeof(struct io_uring_reg_wait)"
+                }
+              ],
+              "kind": "DeclStmt",
+              "location": "io_uring/io_uring.c:3202:2",
+              "text": "unsigned long size = sizeof(struct io_uring_reg_wait); "
+            },
+            {
+              "attrs": {},
+              "children": [
+                {
+                  "attrs": {},
+                  "children": [
+                    {
+                      "attrs": {},
+                      "children": [
+                        {
+                          "attrs": {
+                            "name": "uarg"
+                          },
+                          "children": [],
+                          "kind": "DeclRefExpr",
+                          "location": "io_uring/io_uring.c:3203:36",
+                          "text": "uarg"
+                        }
+                      ],
+                      "kind": "ImplicitCastExpr",
+                      "location": "io_uring/io_uring.c:3203:36",
+                      "text": "uarg"
+                    }
+                  ],
+                  "kind": "CStyleCastExpr",
+                  "location": "io_uring/io_uring.c:3203:25",
+                  "text": "(uintptr_t)uarg"
+                }
+              ],
+              "kind": "DeclStmt",
+              "location": "io_uring/io_uring.c:3203:2",
+              "text": "unsigned long offset = (uintptr_t)uarg; "
+            },
+            {
+              "attrs": {},
+              "children": [],
+              "kind": "DeclStmt",
+              "location": "io_uring/io_uring.c:3204:2",
+              "text": "unsigned long end; "
+            },
+            {
+              "attrs": {},
+              "children": [
+                {
+                  "attrs": {},
+                  "children": [
+                    {
+                      "attrs": {},
+                      "children": [
+                        {
+                          "attrs": {
+                            "name": "__builtin_expect"
+                          },
+                          "children": [],
+                          "kind": "DeclRefExpr",
+                          "location": "io_uring/io_uring.c:3206:6",
+                          "text": "__builtin_expect"
+                        }
+                      ],
+                      "kind": "ImplicitCastExpr",
+                      "location": "io_uring/io_uring.c:3206:6",
+                      "text": "__builtin_expect"
+                    },
+                    {
+                      "attrs": {},
+                      "children": [
+                        {
+                          "attrs": {
+                            "op": "!"
+                          },
+                          "children": [
+                            {
+                              "attrs": {
+                                "op": "!"
+                              },
+                              "children": [
+                                {
+                                  "attrs": {},
+                                  "children": [
+                                    {
+                                      "attrs": {
+                                        "op": "%"
+                                      },
+                                      "children": [
+                                        {
+                                          "attrs": {},
+                                          "children": [
+                                            {
+                                              "attrs": {
+                                                "name": "offset"
+                                              },
+                                              "children": [],
+                                              "kind": "DeclRefExpr",
+                                              "location": "io_uring/io_uring.c:3206:6",
+                                              "text": "offset"
+                                            }
+                                          ],
+                                          "kind": "ImplicitCastExpr",
+                                          "location": "io_uring/io_uring.c:3206:6",
+                                          "text": "offset"
+                                        },
+                                        {
+                                          "attrs": {},
+                                          "children": [],
+                                          "kind": "UnaryExprOrTypeTraitExpr",
+                                          "location": "io_uring/io_uring.c:3206:6",
+                                          "text": "sizeof(long)"
+                                        }
+                                      ],
+                                      "kind": "BinaryOperator",
+                                      "location": "io_uring/io_uring.c:3206:6",
+                                      "text": "offset % sizeof(long)"
+                                    }
+                                  ],
+                                  "kind": "ParenExpr",
+                                  "location": "io_uring/io_uring.c:3206:6",
+                                  "text": "(offset % sizeof(long))"
+                                }
+                              ],
+                              "kind": "UnaryOperator",
+                              "location": "io_uring/io_uring.c:3206:6",
+                              "text": "!(offset % sizeof(long))"
+                            }
+                          ],
+                          "kind": "UnaryOperator",
+                          "location": "io_uring/io_uring.c:3206:6",
+                          "text": "!!(offset % sizeof(long))"
+                        }
+                      ],
+                      "kind": "ImplicitCastExpr",
+                      "location": "io_uring/io_uring.c:3206:6",
+                      "text": "!!(offset % sizeof(long))"
+                    },
+                    {
+                      "attrs": {},
+                      "children": [
+                        {
+                          "attrs": {
+                            "value": "0"
+                          },
+                          "children": [],
+                          "kind": "IntegerLiteral",
+                          "location": "io_uring/io_uring.c:3206:6",
+                          "text": "0"
+                        }
+                      ],
+                      "kind": "ImplicitCastExpr",
+                      "location": "io_uring/io_uring.c:3206:6",
+                      "text": "0"
+                    }
+                  ],
+                  "kind": "CallExpr",
+                  "location": "io_uring/io_uring.c:3206:6",
+                  "text": "__builtin_expect(!!(offset % sizeof(long)), 0)"
+                },
+                {
+                  "attrs": {},
+                  "children": [
+                    {
+                      "attrs": {},
+                      "children": [
+                        {
+                          "attrs": {},
+                          "children": [
+                            {
+                              "attrs": {},
+                              "children": [
+                                {
+                                  "attrs": {
+                                    "name": "ERR_PTR"
+                                  },
+                                  "children": [],
+                                  "kind": "DeclRefExpr",
+                                  "location": "io_uring/io_uring.c:3207:10",
+                                  "text": "ERR_PTR"
+                                }
+                              ],
+                              "kind": "ImplicitCastExpr",
+                              "location": "io_uring/io_uring.c:3207:10",
+                              "text": "ERR_PTR"
+                            },
+                            {
+                              "attrs": {},
+                              "children": [
+                                {
+                                  "attrs": {
+                                    "op": "-"
+                                  },
+                                  "children": [
+                                    {
+                                      "attrs": {
+                                        "value": "14"
+                                      },
+                                      "children": [],
+                                      "kind": "IntegerLiteral",
+                                      "location": "io_uring/io_uring.c:3207:19",
+                                      "text": "14"
+                                    }
+                                  ],
+                                  "kind": "UnaryOperator",
+                                  "location": "io_uring/io_uring.c:3207:18",
+                                  "text": "-14"
+                                }
+                              ],
+                              "kind": "ImplicitCastExpr",
+                              "location": "io_uring/io_uring.c:3207:18",
+                              "text": "-14"
+                            }
+                          ],
+                          "kind": "CallExpr",
+                          "location": "io_uring/io_uring.c:3207:10",
+                          "text": "ERR_PTR(-14)"
+                        }
+                      ],
+                      "kind": "ImplicitCastExpr",
+                      "location": "io_uring/io_uring.c:3207:10",
+                      "text": "ERR_PTR(-14)"
+                    }
+                  ],
+                  "kind": "ReturnStmt",
+                  "location": "io_uring/io_uring.c:3207:3",
+                  "text": "return ERR_PTR(-14); "
+                }
+              ],
+              "kind": "IfStmt",
+              "location": "io_uring/io_uring.c:3206:2",
+              "text": "if (__builtin_expect(!!(offset % sizeof(long)), 0)) return ERR_PTR(-14); "
+            },
+            {
+              "attrs": {},
+              "children": [
+                {
+                  "attrs": {},
+                  "children": [
+                    {
+                      "attrs": {},
+                      "children": [
+                        {
+                          "attrs": {
+                            "name": "__builtin_expect"
+                          },
+                          "children": [],
+                          "kind": "DeclRefExpr",
+                          "location": "io_uring/io_uring.c:3210:6",
+                          "text": "__builtin_expect"
+                        }
+                      ],
+                      "kind": "ImplicitCastExpr",
+                      "location": "io_uring/io_uring.c:3210:6",
+                      "text": "__builtin_expect"
+                    },
+                    {
+                      "attrs": {},
+                      "children": [
+                        {
+                          "attrs": {
+                            "op": "!"
+                          },
+                          "children": [
+                            {
+                              "attrs": {
+                                "op": "!"
+                              },
+                              "children": [
+                                {
+                                  "attrs": {},
+                                  "children": [
+                                    {
+                                      "attrs": {
+                                        "op": "||"
+                                      },
+                                      "children": [
+                                        {
+                                          "attrs": {},
+                                          "children": [
+                                            {
+                                              "attrs": {},
+                                              "children": [
+                                                {
+                                                  "attrs": {},
+                                                  "children": [
+                                                    {
+                                                      "attrs": {
+                                                        "name": "__must_check_overflow"
+                                                      },
+                                                      "children": [],
+                                                      "kind": "DeclRefExpr",
+                                                      "location": "io_uring/io_uring.c:3210:6",
+                                                      "text": "__must_check_overflow"
+                                                    }
+                                                  ],
+                                                  "kind": "ImplicitCastExpr",
+                                                  "location": "io_uring/io_uring.c:3210:6",
+                                                  "text": "__must_check_overflow"
+                                                },
+                                                {
+                                                  "attrs": {},
+                                                  "children": [
+                                                    {
+                                                      "attrs": {},
+                                                      "children": [
+                                                        {
+                                                          "attrs": {
+                                                            "name": "__builtin_add_overflow"
+                                                          },
+                                                          "children": [],
+                                                          "kind": "DeclRefExpr",
+                                                          "location": "io_uring/io_uring.c:3210:6",
+                                                          "text": "__builtin_add_overflow"
+                                                        }
+                                                      ],
+                                                      "kind": "ImplicitCastExpr",
+                                                      "location": "io_uring/io_uring.c:3210:6",
+                                                      "text": "__builtin_add_overflow"
+                                                    },
+                                                    {
+                                                      "attrs": {},
+                                                      "children": [
+                                                        {
+                                                          "attrs": {
+                                                            "name": "offset"
+                                                          },
+                                                          "children": [],
+                                                          "kind": "DeclRefExpr",
+                                                          "location": "io_uring/io_uring.c:3210:6",
+                                                          "text": "offset"
+                                                        }
+                                                      ],
+                                                      "kind": "ImplicitCastExpr",
+                                                      "location": "io_uring/io_uring.c:3210:6",
+                                                      "text": "offset"
+                                                    },
+                                                    {
+                                                      "attrs": {},
+                                                      "children": [
+                                                        {
+                                                          "attrs": {
+                                                            "name": "size"
+                                                          },
+                                                          "children": [],
+                                                          "kind": "DeclRefExpr",
+                                                          "location": "io_uring/io_uring.c:3210:6",
+                                                          "text": "size"
+                                                        }
+                                                      ],
+                                                      "kind": "ImplicitCastExpr",
+                                                      "location": "io_uring/io_uring.c:3210:6",
+                                                      "text": "size"
+                                                    },
+                                                    {
+                                                      "attrs": {
+                                                        "op": "&"
+                                                      },
+                                                      "children": [
+                                                        {
+                                                          "attrs": {
+                                                            "name": "end"
+                                                          },
+                                                          "children": [],
+                                                          "kind": "DeclRefExpr",
+                                                          "location": "io_uring/io_uring.c:3210:6",
+                                                          "text": "end"
+                                                        }
+                                                      ],
+                                                      "kind": "UnaryOperator",
+                                                      "location": "io_uring/io_uring.c:3210:6",
+                                                      "text": "&end"
+                                                    }
+                                                  ],
+                                                  "kind": "CallExpr",
+                                                  "location": "io_uring/io_uring.c:3210:6",
+                                                  "text": "__builtin_add_overflow(offset, size, &end)"
+                                                }
+                                              ],
+                                              "kind": "CallExpr",
+                                              "location": "io_uring/io_uring.c:3210:6",
+                                              "text": "__must_check_overflow(__builtin_add_overflow(offset, size, &end))"
+                                            }
+                                          ],
+                                          "kind": "ImplicitCastExpr",
+                                          "location": "io_uring/io_uring.c:3210:6",
+                                          "text": "__must_check_overflow(__builtin_add_overflow(offset, size, &end))"
+                                        },
+                                        {
+                                          "attrs": {
+                                            "op": ">"
+                                          },
+                                          "children": [
+                                            {
+                                              "attrs": {},
+                                              "children": [
+                                                {
+                                                  "attrs": {
+                                                    "name": "end"
+                                                  },
+                                                  "children": [],
+                                                  "kind": "DeclRefExpr",
+                                                  "location": "io_uring/io_uring.c:3210:6",
+                                                  "text": "end"
+                                                }
+                                              ],
+                                              "kind": "ImplicitCastExpr",
+                                              "location": "io_uring/io_uring.c:3210:6",
+                                              "text": "end"
+                                            },
+                                            {
+                                              "attrs": {},
+                                              "children": [
+                                                {
+                                                  "attrs": {},
+                                                  "children": [
+                                                    {
+                                                      "attrs": {},
+                                                      "children": [
+                                                        {
+                                                          "attrs": {},
+                                                          "children": [
+                                                            {
+                                                              "attrs": {
+                                                                "name": "ctx"
+                                                              },
+                                                              "children": [],
+                                                              "kind": "DeclRefExpr",
+                                                              "location": "io_uring/io_uring.c:3210:6",
+                                                              "text": "ctx"
+                                                            }
+                                                          ],
+                                                          "kind": "ImplicitCastExpr",
+                                                          "location": "io_uring/io_uring.c:3210:6",
+                                                          "text": "ctx"
+                                                        }
+                                                      ],
+                                                      "kind": "MemberExpr",
+                                                      "location": "io_uring/io_uring.c:3210:6",
+                                                      "text": "ctx->"
+                                                    }
+                                                  ],
+                                                  "kind": "MemberExpr",
+                                                  "location": "io_uring/io_uring.c:3210:6",
+                                                  "text": "ctx->cq_wait_size"
+                                                }
+                                              ],
+                                              "kind": "ImplicitCastExpr",
+                                              "location": "io_uring/io_uring.c:3210:6",
+                                              "text": "ctx->cq_wait_size"
+                                            }
+                                          ],
+                                          "kind": "BinaryOperator",
+                                          "location": "io_uring/io_uring.c:3210:6",
+                                          "text": "end > ctx->cq_wait_size"
+                                        }
+                                      ],
+                                      "kind": "BinaryOperator",
+                                      "location": "io_uring/io_uring.c:3210:6",
+                                      "text": "__must_check_overflow(__builtin_add_overflow(offset, size, &end)) || end > ctx->cq_wait_size"
+                                    }
+                                  ],
+                                  "kind": "ParenExpr",
+                                  "location": "io_uring/io_uring.c:3210:6",
+                                  "text": "(__must_check_overflow(__builtin_add_overflow(offset, size, &end)) || end > ctx->cq_wait_size)"
+                                }
+                              ],
+                              "kind": "UnaryOperator",
+                              "location": "io_uring/io_uring.c:3210:6",
+                              "text": "!(__must_check_overflow(__builtin_add_overflow(offset, size, &end)) || end > ctx->cq_wait_size)"
+                            }
+                          ],
+                          "kind": "UnaryOperator",
+                          "location": "io_uring/io_uring.c:3210:6",
+                          "text": "!!(__must_check_overflow(__builtin_add_overflow(offset, size, &end)) || end > ctx->cq_wait_size)"
+                        }
+                      ],
+                      "kind": "ImplicitCastExpr",
+                      "location": "io_uring/io_uring.c:3210:6",
+                      "text": "!!(__must_check_overflow(__builtin_add_overflow(offset, size, &end)) || end > ctx->cq_wait_size)"
+                    },
+                    {
+                      "attrs": {},
+                      "children": [
+                        {
+                          "attrs": {
+                            "value": "0"
+                          },
+                          "children": [],
+                          "kind": "IntegerLiteral",
+                          "location": "io_uring/io_uring.c:3210:6",
+                          "text": "0"
+                        }
+                      ],
+                      "kind": "ImplicitCastExpr",
+                      "location": "io_uring/io_uring.c:3210:6",
+                      "text": "0"
+                    }
+                  ],
+                  "kind": "CallExpr",
+                  "location": "io_uring/io_uring.c:3210:6",
+                  "text": "__builtin_expect(!!(__must_check_overflow(__builtin_add_overflow(offset, size, &end)) || end > ctx->cq_wait_size), 0)"
+                },
+                {
+                  "attrs": {},
+                  "children": [
+                    {
+                      "attrs": {},
+                      "children": [
+                        {
+                          "attrs": {},
+                          "children": [
+                            {
+                              "attrs": {},
+                              "children": [
+                                {
+                                  "attrs": {
+                                    "name": "ERR_PTR"
+                                  },
+                                  "children": [],
+                                  "kind": "DeclRefExpr",
+                                  "location": "io_uring/io_uring.c:3212:10",
+                                  "text": "ERR_PTR"
+                                }
+                              ],
+                              "kind": "ImplicitCastExpr",
+                              "location": "io_uring/io_uring.c:3212:10",
+                              "text": "ERR_PTR"
+                            },
+                            {
+                              "attrs": {},
+                              "children": [
+                                {
+                                  "attrs": {
+                                    "op": "-"
+                                  },
+                                  "children": [
+                                    {
+                                      "attrs": {
+                                        "value": "14"
+                                      },
+                                      "children": [],
+                                      "kind": "IntegerLiteral",
+                                      "location": "io_uring/io_uring.c:3212:19",
+                                      "text": "14"
+                                    }
+                                  ],
+                                  "kind": "UnaryOperator",
+                                  "location": "io_uring/io_uring.c:3212:18",
+                                  "text": "-14"
+                                }
+                              ],
+                              "kind": "ImplicitCastExpr",
+                              "location": "io_uring/io_uring.c:3212:18",
+                              "text": "-14"
+                            }
+                          ],
+                          "kind": "CallExpr",
+                          "location": "io_uring/io_uring.c:3212:10",
+                          "text": "ERR_PTR(-14)"
+                        }
+                      ],
+                      "kind": "ImplicitCastExpr",
+                      "location": "io_uring/io_uring.c:3212:10",
+                      "text": "ERR_PTR(-14)"
+                    }
+                  ],
+                  "kind": "ReturnStmt",
+                  "location": "io_uring/io_uring.c:3212:3",
+                  "text": "return ERR_PTR(-14); "
+                }
+              ],
+              "kind": "IfStmt",
+              "location": "io_uring/io_uring.c:3210:2",
+              "text": "if (__builtin_expect(!!(__must_check_overflow(__builtin_add_overflow(offset, size, &end)) || end > ctx->cq_wait_size), 0)) return ERR_PTR(-14); "
+            },
+            {
+              "attrs": {},
+              "children": [
+                {
+                  "attrs": {},
+                  "children": [
+                    {
+                      "attrs": {
+                        "op": "+"
+                      },
+                      "children": [
+                        {
+                          "attrs": {},
+                          "children": [
+                            {
+                              "attrs": {},
+                              "children": [
+                                {
+                                  "attrs": {},
+                                  "children": [
+                                    {
+                                      "attrs": {},
+                                      "children": [
+                                        {
+                                          "attrs": {
+                                            "name": "ctx"
+                                          },
+                                          "children": [],
+                                          "kind": "DeclRefExpr",
+                                          "location": "io_uring/io_uring.c:3214:9",
+                                          "text": "ctx"
+                                        }
+                                      ],
+                                      "kind": "ImplicitCastExpr",
+                                      "location": "io_uring/io_uring.c:3214:9",
+                                      "text": "ctx"
+                                    }
+                                  ],
+                                  "kind": "MemberExpr",
+                                  "location": "io_uring/io_uring.c:3214:9",
+                                  "text": "ctx->"
+                                }
+                              ],
+                              "kind": "MemberExpr",
+                              "location": "io_uring/io_uring.c:3214:9",
+                              "text": "ctx->cq_wait_arg"
+                            }
+                          ],
+                          "kind": "ImplicitCastExpr",
+                          "location": "io_uring/io_uring.c:3214:9",
+                          "text": "ctx->cq_wait_arg"
+                        },
+                        {
+                          "attrs": {},
+                          "children": [
+                            {
+                              "attrs": {
+                                "name": "offset"
+                              },
+                              "children": [],
+                              "kind": "DeclRefExpr",
+                              "location": "io_uring/io_uring.c:3214:28",
+                              "text": "offset"
+                            }
+                          ],
+                          "kind": "ImplicitCastExpr",
+                          "location": "io_uring/io_uring.c:3214:28",
+                          "text": "offset"
+                        }
+                      ],
+                      "kind": "BinaryOperator",
+                      "location": "io_uring/io_uring.c:3214:9",
+                      "text": "ctx->cq_wait_arg + offset"
+                    }
+                  ],
+                  "kind": "ImplicitCastExpr",
+                  "location": "io_uring/io_uring.c:3214:9",
+                  "text": "ctx->cq_wait_arg + offset"
+                }
+              ],
+              "kind": "ReturnStmt",
+              "location": "io_uring/io_uring.c:3214:2",
+              "text": "return ctx->cq_wait_arg + offset; "
+            }
+          ],
+          "kind": "CompoundStmt",
+          "location": "io_uring/io_uring.c:3201:1",
+          "text": "{ unsigned long size = sizeof(struct io_uring_reg_wait); unsigned long offset = (uintptr_t)uarg; unsigned long end; if (__builtin_expect(!!(offset % sizeof(long)), 0)) return ERR_PTR(-14); if (__builtin_expect(!!(__must_check_overflow(__builtin_add_overflow(offset, size, &end)) || end > ctx->cq_wait_size), 0)) return ERR_PTR(-14); return ctx->cq_wait_arg + offset; } "
+        },
+        "function": "io_get_ext_arg_reg",
+        "location": "io_uring/io_uring.c:3199:34",
+        "params": [
+          {
+            "name": "ctx",
+            "type": "struct io_ring_ctx *"
+          },
+          {
+            "name": "uarg",
+            "type": "const struct io_uring_getevents_arg *"
+          }
+        ],
+        "return_type": "struct io_uring_reg_wait *"
+      },
+      "cfg": {
+        "blocks": [
+          {
+            "id": 0,
+            "is_entry": false,
+            "is_exit": true,
+            "preds": [
+              1,
+              2,
+              6
+            ],
+            "stmts": [],
+            "succs": [],
+            "terminator": null
+          },
+          {
+            "id": 1,
+            "is_entry": false,
+            "is_exit": false,
+            "preds": [
+              3
+            ],
+            "stmts": [
+              "ctx->cq_wait_arg + offset",
+              "return ctx->cq_wait_arg + offset; "
+            ],
+            "succs": [
+              0
+            ],
+            "terminator": null
+          },
+          {
+            "id": 2,
+            "is_entry": false,
+            "is_exit": false,
+            "preds": [
+              3
+            ],
+            "stmts": [
+              "ERR_PTR(-14)",
+              "ERR_PTR(-14)",
+              "return ERR_PTR(-14); "
+            ],
+            "succs": [
+              0
+            ],
+            "terminator": null
+          },
+          {
+            "id": 3,
+            "is_entry": false,
+            "is_exit": false,
+            "preds": [
+              4,
+              5
+            ],
+            "stmts": [
+              "__must_check_overflow(__builtin_add_overflow(offset, size, &end)) || end > ctx->cq_wait_size",
+              "__builtin_expect(!!(__must_check_overflow(__builtin_add_overflow(offset, size, &end)) || end > ctx->cq_wait_size), 0)"
+            ],
+            "succs": [
+              2,
+              1
+            ],
+            "terminator": "if (__builtin_expect(!!(__must_check_overflow(__builtin_add_overflow(offset, size, &end)) || end > ctx->cq_wait_size), 0)) return ERR_PTR(-14); "
+          },
+          {
+            "id": 4,
+            "is_entry": false,
+            "is_exit": false,
+            "preds": [
+              5
+            ],
+            "stmts": [
+              "end > ctx->cq_wait_size"
+            ],
+            "succs": [
+              3
+            ],
+            "terminator": null
+          },
+          {
+            "id": 5,
+            "is_entry": false,
+            "is_exit": false,
+            "preds": [
+              7
+            ],
+            "stmts": [
+              "__builtin_add_overflow(offset, size, &end)",
+              "__must_check_overflow(__builtin_add_overflow(offset, size, &end))",
+              "__must_check_overflow(__builtin_add_overflow(offset, size, &end))"
+            ],
+            "succs": [
+              3,
+              4
+            ],
+            "terminator": "__must_check_overflow(__builtin_add_overflow(offset, size, &end)) || end > ctx->cq_wait_size"
+          },
+          {
+            "id": 6,
+            "is_entry": false,
+            "is_exit": false,
+            "preds": [
+              7
+            ],
+            "stmts": [
+              "ERR_PTR(-14)",
+              "ERR_PTR(-14)",
+              "return ERR_PTR(-14); "
+            ],
+            "succs": [
+              0
+            ],
+            "terminator": null
+          },
+          {
+            "id": 7,
+            "is_entry": false,
+            "is_exit": false,
+            "preds": [
+              8
+            ],
+            "stmts": [
+              "unsigned long size = sizeof(struct io_uring_reg_wait); ",
+              "unsigned long offset = (uintptr_t)uarg; ",
+              "unsigned long end; ",
+              "__builtin_expect(!!(offset % sizeof(long)), 0)"
+            ],
+            "succs": [
+              6,
+              5
+            ],
+            "terminator": "if (__builtin_expect(!!(offset % sizeof(long)), 0)) return ERR_PTR(-14); "
+          },
+          {
+            "id": 8,
+            "is_entry": true,
+            "is_exit": false,
+            "preds": [],
+            "stmts": [],
+            "succs": [
+              7
+            ],
+            "terminator": null
+          }
+        ],
+        "status": "ok"
+      },
+      "name": "io_get_ext_arg_reg",
+      "normalized_ir": {
+        "edges": {
+          "control_flow": [
+            {
+              "from": 1,
+              "kind": "fallthrough",
+              "to": 2
+            },
+            {
+              "from": 3,
+              "kind": "fallthrough",
+              "to": 4
+            },
+            {
+              "from": 4,
+              "kind": "fallthrough",
+              "to": 5
+            },
+            {
+              "from": 6,
+              "kind": "fallthrough",
+              "to": 7
+            },
+            {
+              "from": 7,
+              "kind": "fallthrough",
+              "to": 8
+            },
+            {
+              "from": 8,
+              "kind": "backedge",
+              "to": 3
+            },
+            {
+              "from": 8,
+              "kind": "backedge",
+              "to": 1
+            },
+            {
+              "from": 9,
+              "kind": "backedge",
+              "to": 6
+            },
+            {
+              "from": 10,
+              "kind": "fallthrough",
+              "to": 11
+            },
+            {
+              "from": 11,
+              "kind": "fallthrough",
+              "to": 12
+            },
+            {
+              "from": 12,
+              "kind": "fallthrough",
+              "to": 13
+            },
+            {
+              "from": 13,
+              "kind": "backedge",
+              "to": 6
+            },
+            {
+              "from": 13,
+              "kind": "backedge",
+              "to": 9
+            },
+            {
+              "from": 14,
+              "kind": "fallthrough",
+              "to": 15
+            },
+            {
+              "from": 15,
+              "kind": "fallthrough",
+              "to": 16
+            },
+            {
+              "from": 17,
+              "kind": "fallthrough",
+              "to": 18
+            },
+            {
+              "from": 18,
+              "kind": "fallthrough",
+              "to": 19
+            },
+            {
+              "from": 19,
+              "kind": "fallthrough",
+              "to": 20
+            },
+            {
+              "from": 20,
+              "kind": "fallthrough",
+              "to": 21
+            },
+            {
+              "from": 21,
+              "kind": "backedge",
+              "to": 14
+            },
+            {
+              "from": 21,
+              "kind": "backedge",
+              "to": 10
+            }
+          ]
+        },
+        "nodes": [
+          {
+            "ast_kind": "ImplicitCastExpr",
+            "bb_id": 1,
+            "ctrl_pred": [
+              8
+            ],
+            "ctrl_succ": [
+              2
+            ],
+            "defs": [],
+            "index_in_bb": 0,
+            "is_terminator": false,
+            "loc": {
+              "column": 9,
+              "file": "io_uring/io_uring.c",
+              "line": 3214
+            },
+            "stmt_id": 1,
+            "text": "ctx->cq_wait_arg + offset",
+            "type": "expr",
+            "uses": [
+              "ctx",
+              "offset"
+            ]
+          },
+          {
+            "ast_kind": "ReturnStmt",
+            "bb_id": 1,
+            "ctrl_pred": [
+              1
+            ],
+            "ctrl_succ": [],
+            "defs": [],
+            "index_in_bb": 1,
+            "is_terminator": false,
+            "loc": {
+              "column": 2,
+              "file": "io_uring/io_uring.c",
+              "line": 3214
+            },
+            "stmt_id": 2,
+            "text": "return ctx->cq_wait_arg + offset; ",
+            "type": "return",
+            "uses": [
+              "ctx",
+              "offset"
+            ]
+          },
+          {
+            "ast_kind": "CallExpr",
+            "bb_id": 2,
+            "call": {
+              "args": [
+                "-14"
+              ],
+              "callee": "ERR_PTR",
+              "ret_target": ""
+            },
+            "ctrl_pred": [
+              8
+            ],
+            "ctrl_succ": [
+              4
+            ],
+            "defs": [],
+            "index_in_bb": 0,
+            "is_terminator": false,
+            "loc": {
+              "column": 10,
+              "file": "io_uring/io_uring.c",
+              "line": 3212
+            },
+            "stmt_id": 3,
+            "text": "ERR_PTR(-14)",
+            "type": "call",
+            "uses": [
+              "ERR_PTR"
+            ]
+          },
+          {
+            "ast_kind": "ImplicitCastExpr",
+            "bb_id": 2,
+            "ctrl_pred": [
+              3
+            ],
+            "ctrl_succ": [
+              5
+            ],
+            "defs": [],
+            "index_in_bb": 1,
+            "is_terminator": false,
+            "loc": {
+              "column": 10,
+              "file": "io_uring/io_uring.c",
+              "line": 3212
+            },
+            "stmt_id": 4,
+            "text": "ERR_PTR(-14)",
+            "type": "expr",
+            "uses": [
+              "ERR_PTR"
+            ]
+          },
+          {
+            "ast_kind": "ReturnStmt",
+            "bb_id": 2,
+            "ctrl_pred": [
+              4
+            ],
+            "ctrl_succ": [],
+            "defs": [],
+            "index_in_bb": 2,
+            "is_terminator": false,
+            "loc": {
+              "column": 3,
+              "file": "io_uring/io_uring.c",
+              "line": 3212
+            },
+            "stmt_id": 5,
+            "text": "return ERR_PTR(-14); ",
+            "type": "return",
+            "uses": [
+              "ERR_PTR"
+            ]
+          },
+          {
+            "ast_kind": "BinaryOperator",
+            "bb_id": 3,
+            "ctrl_pred": [
+              9,
+              13
+            ],
+            "ctrl_succ": [
+              7
+            ],
+            "defs": [],
+            "index_in_bb": 0,
+            "is_terminator": false,
+            "loc": {
+              "column": 6,
+              "file": "io_uring/io_uring.c",
+              "line": 3210
+            },
+            "stmt_id": 6,
+            "text": "__must_check_overflow(__builtin_add_overflow(offset, size, &end)) || end > ctx->cq_wait_size",
+            "type": "expr",
+            "uses": [
+              "__must_check_overflow",
+              "__builtin_add_overflow",
+              "offset",
+              "size",
+              "end",
+              "ctx"
+            ]
+          },
+          {
+            "ast_kind": "CallExpr",
+            "bb_id": 3,
+            "call": {
+              "args": [
+                "!!(__must_check_overflow(__builtin_add_overflow(offset, size, &end)) || end > ctx->cq_wait_size)",
+                "0"
+              ],
+              "callee": "__builtin_expect",
+              "ret_target": ""
+            },
+            "ctrl_pred": [
+              6
+            ],
+            "ctrl_succ": [
+              8
+            ],
+            "defs": [],
+            "index_in_bb": 1,
+            "is_terminator": false,
+            "loc": {
+              "column": 6,
+              "file": "io_uring/io_uring.c",
+              "line": 3210
+            },
+            "stmt_id": 7,
+            "text": "__builtin_expect(!!(__must_check_overflow(__builtin_add_overflow(offset, size, &end)) || end > ctx->cq_wait_size), 0)",
+            "type": "call",
+            "uses": [
+              "__builtin_expect",
+              "__must_check_overflow",
+              "__builtin_add_overflow",
+              "offset",
+              "size",
+              "end",
+              "ctx"
+            ]
+          },
+          {
+            "ast_kind": "IfStmt",
+            "bb_id": 3,
+            "ctrl_pred": [
+              7
+            ],
+            "ctrl_succ": [
+              1,
+              3
+            ],
+            "defs": [],
+            "index_in_bb": 2,
+            "is_terminator": true,
+            "loc": {
+              "column": 2,
+              "file": "io_uring/io_uring.c",
+              "line": 3210
+            },
+            "stmt_id": 8,
+            "text": "if (__builtin_expect(!!(__must_check_overflow(__builtin_add_overflow(offset, size, &end)) || end > ctx->cq_wait_size), 0)) return ERR_PTR(-14); ",
+            "type": "branch",
+            "uses": [
+              "__builtin_expect",
+              "__must_check_overflow",
+              "__builtin_add_overflow",
+              "offset",
+              "size",
+              "end",
+              "ctx",
+              "ERR_PTR"
+            ]
+          },
+          {
+            "ast_kind": "BinaryOperator",
+            "bb_id": 4,
+            "ctrl_pred": [
+              13
+            ],
+            "ctrl_succ": [
+              6
+            ],
+            "defs": [],
+            "index_in_bb": 0,
+            "is_terminator": false,
+            "loc": {
+              "column": 6,
+              "file": "io_uring/io_uring.c",
+              "line": 3210
+            },
+            "stmt_id": 9,
+            "text": "end > ctx->cq_wait_size",
+            "type": "expr",
+            "uses": [
+              "end",
+              "ctx"
+            ]
+          },
+          {
+            "ast_kind": "CallExpr",
+            "bb_id": 5,
+            "call": {
+              "args": [
+                "offset",
+                "size",
+                "&end"
+              ],
+              "callee": "__builtin_add_overflow",
+              "ret_target": ""
+            },
+            "ctrl_pred": [
+              21
+            ],
+            "ctrl_succ": [
+              11
+            ],
+            "defs": [],
+            "index_in_bb": 0,
+            "is_terminator": false,
+            "loc": {
+              "column": 6,
+              "file": "io_uring/io_uring.c",
+              "line": 3210
+            },
+            "stmt_id": 10,
+            "text": "__builtin_add_overflow(offset, size, &end)",
+            "type": "call",
+            "uses": [
+              "__builtin_add_overflow",
+              "offset",
+              "size",
+              "end"
+            ]
+          },
+          {
+            "ast_kind": "CallExpr",
+            "bb_id": 5,
+            "call": {
+              "args": [
+                "__builtin_add_overflow(offset, size, &end)"
+              ],
+              "callee": "__must_check_overflow",
+              "ret_target": ""
+            },
+            "ctrl_pred": [
+              10
+            ],
+            "ctrl_succ": [
+              12
+            ],
+            "defs": [],
+            "index_in_bb": 1,
+            "is_terminator": false,
+            "loc": {
+              "column": 6,
+              "file": "io_uring/io_uring.c",
+              "line": 3210
+            },
+            "stmt_id": 11,
+            "text": "__must_check_overflow(__builtin_add_overflow(offset, size, &end))",
+            "type": "call",
+            "uses": [
+              "__must_check_overflow",
+              "__builtin_add_overflow",
+              "offset",
+              "size",
+              "end"
+            ]
+          },
+          {
+            "ast_kind": "ImplicitCastExpr",
+            "bb_id": 5,
+            "ctrl_pred": [
+              11
+            ],
+            "ctrl_succ": [
+              13
+            ],
+            "defs": [],
+            "index_in_bb": 2,
+            "is_terminator": false,
+            "loc": {
+              "column": 6,
+              "file": "io_uring/io_uring.c",
+              "line": 3210
+            },
+            "stmt_id": 12,
+            "text": "__must_check_overflow(__builtin_add_overflow(offset, size, &end))",
+            "type": "expr",
+            "uses": [
+              "__must_check_overflow",
+              "__builtin_add_overflow",
+              "offset",
+              "size",
+              "end"
+            ]
+          },
+          {
+            "ast_kind": "BinaryOperator",
+            "bb_id": 5,
+            "ctrl_pred": [
+              12
+            ],
+            "ctrl_succ": [
+              6,
+              9
+            ],
+            "defs": [],
+            "index_in_bb": 3,
+            "is_terminator": true,
+            "loc": {
+              "column": 6,
+              "file": "io_uring/io_uring.c",
+              "line": 3210
+            },
+            "stmt_id": 13,
+            "text": "__must_check_overflow(__builtin_add_overflow(offset, size, &end)) || end > ctx->cq_wait_size",
+            "type": "expr",
+            "uses": [
+              "__must_check_overflow",
+              "__builtin_add_overflow",
+              "offset",
+              "size",
+              "end",
+              "ctx"
+            ]
+          },
+          {
+            "ast_kind": "CallExpr",
+            "bb_id": 6,
+            "call": {
+              "args": [
+                "-14"
+              ],
+              "callee": "ERR_PTR",
+              "ret_target": ""
+            },
+            "ctrl_pred": [
+              21
+            ],
+            "ctrl_succ": [
+              15
+            ],
+            "defs": [],
+            "index_in_bb": 0,
+            "is_terminator": false,
+            "loc": {
+              "column": 10,
+              "file": "io_uring/io_uring.c",
+              "line": 3207
+            },
+            "stmt_id": 14,
+            "text": "ERR_PTR(-14)",
+            "type": "call",
+            "uses": [
+              "ERR_PTR"
+            ]
+          },
+          {
+            "ast_kind": "ImplicitCastExpr",
+            "bb_id": 6,
+            "ctrl_pred": [
+              14
+            ],
+            "ctrl_succ": [
+              16
+            ],
+            "defs": [],
+            "index_in_bb": 1,
+            "is_terminator": false,
+            "loc": {
+              "column": 10,
+              "file": "io_uring/io_uring.c",
+              "line": 3207
+            },
+            "stmt_id": 15,
+            "text": "ERR_PTR(-14)",
+            "type": "expr",
+            "uses": [
+              "ERR_PTR"
+            ]
+          },
+          {
+            "ast_kind": "ReturnStmt",
+            "bb_id": 6,
+            "ctrl_pred": [
+              15
+            ],
+            "ctrl_succ": [],
+            "defs": [],
+            "index_in_bb": 2,
+            "is_terminator": false,
+            "loc": {
+              "column": 3,
+              "file": "io_uring/io_uring.c",
+              "line": 3207
+            },
+            "stmt_id": 16,
+            "text": "return ERR_PTR(-14); ",
+            "type": "return",
+            "uses": [
+              "ERR_PTR"
+            ]
+          },
+          {
+            "ast_kind": "DeclStmt",
+            "bb_id": 7,
+            "ctrl_pred": [],
+            "ctrl_succ": [
+              18
+            ],
+            "defs": [
+              "size"
+            ],
+            "index_in_bb": 0,
+            "is_terminator": false,
+            "loc": {
+              "column": 2,
+              "file": "io_uring/io_uring.c",
+              "line": 3202
+            },
+            "stmt_id": 17,
+            "text": "unsigned long size = sizeof(struct io_uring_reg_wait); ",
+            "type": "decl",
+            "uses": []
+          },
+          {
+            "ast_kind": "DeclStmt",
+            "bb_id": 7,
+            "ctrl_pred": [
+              17
+            ],
+            "ctrl_succ": [
+              19
+            ],
+            "defs": [
+              "offset"
+            ],
+            "index_in_bb": 1,
+            "is_terminator": false,
+            "loc": {
+              "column": 2,
+              "file": "io_uring/io_uring.c",
+              "line": 3203
+            },
+            "stmt_id": 18,
+            "text": "unsigned long offset = (uintptr_t)uarg; ",
+            "type": "decl",
+            "uses": [
+              "uarg"
+            ]
+          },
+          {
+            "ast_kind": "DeclStmt",
+            "bb_id": 7,
+            "ctrl_pred": [
+              18
+            ],
+            "ctrl_succ": [
+              20
+            ],
+            "defs": [
+              "end"
+            ],
+            "index_in_bb": 2,
+            "is_terminator": false,
+            "loc": {
+              "column": 2,
+              "file": "io_uring/io_uring.c",
+              "line": 3204
+            },
+            "stmt_id": 19,
+            "text": "unsigned long end; ",
+            "type": "decl",
+            "uses": []
+          },
+          {
+            "ast_kind": "CallExpr",
+            "bb_id": 7,
+            "call": {
+              "args": [
+                "!!(offset % sizeof(long))",
+                "0"
+              ],
+              "callee": "__builtin_expect",
+              "ret_target": ""
+            },
+            "ctrl_pred": [
+              19
+            ],
+            "ctrl_succ": [
+              21
+            ],
+            "defs": [],
+            "index_in_bb": 3,
+            "is_terminator": false,
+            "loc": {
+              "column": 6,
+              "file": "io_uring/io_uring.c",
+              "line": 3206
+            },
+            "stmt_id": 20,
+            "text": "__builtin_expect(!!(offset % sizeof(long)), 0)",
+            "type": "call",
+            "uses": [
+              "__builtin_expect",
+              "offset"
+            ]
+          },
+          {
+            "ast_kind": "IfStmt",
+            "bb_id": 7,
+            "ctrl_pred": [
+              20
+            ],
+            "ctrl_succ": [
+              10,
+              14
+            ],
+            "defs": [],
+            "index_in_bb": 4,
+            "is_terminator": true,
+            "loc": {
+              "column": 2,
+              "file": "io_uring/io_uring.c",
+              "line": 3206
+            },
+            "stmt_id": 21,
+            "text": "if (__builtin_expect(!!(offset % sizeof(long)), 0)) return ERR_PTR(-14); ",
+            "type": "branch",
+            "uses": [
+              "__builtin_expect",
+              "offset",
+              "ERR_PTR"
+            ]
+          }
+        ],
+        "status": "ok",
+        "version": "v1"
+      }
+    }
+  ],
+  "functions_found": 1,
+  "functions_requested": 1,
+  "requested_function_names": [
+    "io_get_ext_arg_reg"
+  ],
+  "source_file": "io_uring/io_uring.c"
+}

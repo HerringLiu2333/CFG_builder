@@ -67,6 +67,7 @@ public:
 			}
 			if (outputMode_ == JsonOutputMode::CfgOnly || outputMode_ == JsonOutputMode::AstAndCfg) {
 				functionJson["cfg"] = cfgbuilder::output::CFGPrinter::BuildFunctionCfgJson(*functionDecl, cfg.get(), context);
+				functionJson["normalized_ir"] = cfgbuilder::output::CFGPrinter::BuildFunctionNormalizedIrJson(*functionDecl, cfg.get(), context);
 			}
 			functionArray.push_back(std::move(functionJson));
 		}

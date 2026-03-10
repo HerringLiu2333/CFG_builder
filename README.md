@@ -134,6 +134,32 @@ The `cfg.blocks[]` contains:
 - `terminator`
 - `stmts[]`
 
+### `normalized_ir.nodes[]` field meanings
+
+When CFG mode is enabled, each function also includes `normalized_ir` for downstream Def-Use/PDG/Slicing in external tools.
+
+Each element in `normalized_ir.nodes[]` represents one normalized statement-level IR node:
+
+- `stmt_id`: Unique statement ID inside the function.
+- `bb_id`: CFG basic block ID where this statement is located.
+- `index_in_bb`: Statement order index within the basic block (0-based).
+- `loc`: Source location object.
+	- `loc.file`: Source file path.
+	- `loc.line`: 1-based line number.
+	- `loc.column`: 1-based column number.
+- `type`: Normalized semantic type (e.g. `decl`, `assign`, `call`, `branch`, `return`, `expr`, `stmt`).
+- `ast_kind`: Original Clang AST statement kind (e.g. `IfStmt`, `CallExpr`).
+- `text`: Pretty-printed single-line statement text.
+- `is_terminator`: Whether this node is a CFG terminator statement of its basic block.
+- `defs[]`: Variables defined by this statement.
+- `uses[]`: Variables used/read by this statement.
+- `call` (optional): Present when the node is recognized as a call.
+	- `call.callee`: Callee name.
+	- `call.args[]`: Rendered argument expressions.
+	- `call.ret_target`: Assignment target receiving return value (empty if none).
+- `ctrl_pred[]`: Predecessor statement IDs in statement-level control flow.
+- `ctrl_succ[]`: Successor statement IDs in statement-level control flow.
+
 ---
 
 ## 7. API for Integration (e.g., pybind11)
@@ -308,6 +334,32 @@ cmake --build build
 - `succs[]`
 - `terminator`
 - `stmts[]`
+
+### `normalized_ir.nodes[]` 字段说明
+
+当输出模式包含 CFG 时，每个函数还会附带 `normalized_ir`，用于在外部工具中继续做 Def-Use、PDG、程序切片等分析。
+
+`normalized_ir.nodes[]` 中每个元素对应一条标准化后的语句级 IR 节点：
+
+- `stmt_id`：函数内唯一语句编号。
+- `bb_id`：该语句所在 CFG 基本块编号。
+- `index_in_bb`：该语句在基本块内的顺序（从 0 开始）。
+- `loc`：源码位置信息对象。
+	- `loc.file`：源码文件路径。
+	- `loc.line`：行号（从 1 开始）。
+	- `loc.column`：列号（从 1 开始）。
+- `type`：归一化语义类型（例如 `decl`、`assign`、`call`、`branch`、`return`、`expr`、`stmt`）。
+- `ast_kind`：原始 Clang AST 节点类型（例如 `IfStmt`、`CallExpr`）。
+- `text`：语句的单行可读文本。
+- `is_terminator`：该节点是否为所在基本块的终结语句（terminator）。
+- `defs[]`：该语句定义（写入）的变量集合。
+- `uses[]`：该语句使用（读取）的变量集合。
+- `call`（可选）：当该节点被识别为调用语句时存在。
+	- `call.callee`：被调用函数名。
+	- `call.args[]`：参数表达式文本列表。
+	- `call.ret_target`：接收返回值的目标变量（无则为空字符串）。
+- `ctrl_pred[]`：语句级控制流前驱 `stmt_id` 列表。
+- `ctrl_succ[]`：语句级控制流后继 `stmt_id` 列表。
 
 ---
 

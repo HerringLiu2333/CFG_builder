@@ -27,6 +27,11 @@ public:
 		const clang::FunctionDecl& functionDecl,
 		const clang::CFG* cfg,
 		clang::ASTContext& context);
+
+	static llvm::json::Object BuildFunctionNormalizedIrJson(
+		const clang::FunctionDecl& functionDecl,
+		const clang::CFG* cfg,
+		clang::ASTContext& context);
 };
 
 } // namespace cfgbuilder::output

@@ -3,16 +3,25 @@
 #include "output/CFGPrinter.h"
 
 #include "clang/AST/ASTContext.h"
+#include "clang/AST/DeclCXX.h"
 #include "clang/AST/Decl.h"
 #include "clang/AST/Expr.h"
 #include "clang/AST/PrettyPrinter.h"
+#include "clang/AST/RecursiveASTVisitor.h"
 #include "clang/AST/Stmt.h"
 #include "clang/Basic/SourceLocation.h"
 #include "clang/Basic/SourceManager.h"
 #include "llvm/ADT/APSInt.h"
+#include "llvm/ADT/SmallPtrSet.h"
+#include "llvm/ADT/SmallVector.h"
 #include "llvm/Support/raw_ostream.h"
 
 #include <algorithm>
+#include <cstdint>
+#include <deque>
+#include <set>
+#include <unordered_map>
+#include <unordered_set>
 #include <string>
 #include <vector>
 
@@ -29,6 +38,15 @@ std::string GetLocationString(const clang::SourceManager& sourceManager, clang::
 	return std::string(presumedLoc.getFilename()) + ":" +
 		std::to_string(presumedLoc.getLine()) + ":" +
 		std::to_string(presumedLoc.getColumn());
+}
+
+std::string GetFilenameString(const clang::SourceManager& sourceManager, clang::SourceLocation location) {
+	const clang::SourceLocation expansionLocation = sourceManager.getExpansionLoc(location);
+	const clang::PresumedLoc presumedLoc = sourceManager.getPresumedLoc(expansionLocation);
+	if (!presumedLoc.isValid()) {
+		return "<invalid>";
+	}
+	return std::string(presumedLoc.getFilename());
 }
 
 std::string ToSingleLine(std::string text) {
@@ -74,6 +92,318 @@ std::string RenderStmt(const clang::Stmt* stmt, const clang::LangOptions& langOp
 		rendered = stmt->getStmtClassName();
 	}
 	return rendered;
+}
+
+int64_t GetLine(const clang::SourceManager& sourceManager, clang::SourceLocation location) {
+	const clang::SourceLocation expansionLocation = sourceManager.getExpansionLoc(location);
+	const clang::PresumedLoc presumedLoc = sourceManager.getPresumedLoc(expansionLocation);
+	if (!presumedLoc.isValid()) {
+		return -1;
+	}
+	return static_cast<int64_t>(presumedLoc.getLine());
+}
+
+int64_t GetColumn(const clang::SourceManager& sourceManager, clang::SourceLocation location) {
+	const clang::SourceLocation expansionLocation = sourceManager.getExpansionLoc(location);
+	const clang::PresumedLoc presumedLoc = sourceManager.getPresumedLoc(expansionLocation);
+	if (!presumedLoc.isValid()) {
+		return -1;
+	}
+	return static_cast<int64_t>(presumedLoc.getColumn());
+}
+
+void AddUnique(std::vector<std::string>& values, const std::string& value) {
+	if (value.empty()) {
+		return;
+	}
+	if (std::find(values.begin(), values.end(), value) == values.end()) {
+		values.push_back(value);
+	}
+}
+
+class DeclRefCollector : public clang::RecursiveASTVisitor<DeclRefCollector> {
+public:
+	bool VisitDeclRefExpr(clang::DeclRefExpr* declRefExpr) {
+		if (declRefExpr == nullptr) {
+			return true;
+		}
+
+		AddUnique(names_, declRefExpr->getNameInfo().getAsString());
+		return true;
+	}
+
+	const std::vector<std::string>& Names() const { return names_; }
+
+private:
+	std::vector<std::string> names_;
+};
+
+std::vector<std::string> CollectDeclRefs(const clang::Stmt* stmt) {
+	if (stmt == nullptr) {
+		return {};
+	}
+
+	DeclRefCollector collector;
+	collector.TraverseStmt(const_cast<clang::Stmt*>(stmt));
+	return collector.Names();
+}
+
+std::string GuessNodeType(const clang::Stmt* stmt) {
+	if (stmt == nullptr) {
+		return "unknown";
+	}
+
+	if (llvm::isa<clang::CallExpr>(stmt)) {
+		return "call";
+	}
+	if (llvm::isa<clang::ReturnStmt>(stmt)) {
+		return "return";
+	}
+	if (llvm::isa<clang::IfStmt>(stmt) || llvm::isa<clang::WhileStmt>(stmt) || llvm::isa<clang::DoStmt>(stmt) ||
+		llvm::isa<clang::ForStmt>(stmt) || llvm::isa<clang::SwitchStmt>(stmt)) {
+		return "branch";
+	}
+	if (llvm::isa<clang::DeclStmt>(stmt)) {
+		return "decl";
+	}
+	if (const auto* binaryOp = llvm::dyn_cast<clang::BinaryOperator>(stmt)) {
+		if (binaryOp->isAssignmentOp() || binaryOp->isCompoundAssignmentOp()) {
+			return "assign";
+		}
+		return "expr";
+	}
+	if (const auto* unaryOp = llvm::dyn_cast<clang::UnaryOperator>(stmt)) {
+		if (unaryOp->isIncrementDecrementOp()) {
+			return "assign";
+		}
+		return "expr";
+	}
+
+	if (llvm::isa<clang::Expr>(stmt)) {
+		return "expr";
+	}
+	return "stmt";
+}
+
+const clang::CallExpr* FindTopCallExpr(const clang::Stmt* stmt) {
+	if (stmt == nullptr) {
+		return nullptr;
+	}
+
+	if (const auto* callExpr = llvm::dyn_cast<clang::CallExpr>(stmt)) {
+		return callExpr;
+	}
+
+	if (const auto* binaryOp = llvm::dyn_cast<clang::BinaryOperator>(stmt)) {
+		return llvm::dyn_cast<clang::CallExpr>(binaryOp->getRHS()->IgnoreParenImpCasts());
+	}
+
+	if (const auto* declStmt = llvm::dyn_cast<clang::DeclStmt>(stmt)) {
+		for (const clang::Decl* decl : declStmt->decls()) {
+			const auto* varDecl = llvm::dyn_cast<clang::VarDecl>(decl);
+			if (varDecl == nullptr || !varDecl->hasInit()) {
+				continue;
+			}
+			if (const auto* callExpr = llvm::dyn_cast<clang::CallExpr>(varDecl->getInit()->IgnoreParenImpCasts())) {
+				return callExpr;
+			}
+		}
+	}
+
+	return nullptr;
+}
+
+std::string GetCalleeName(const clang::CallExpr* callExpr) {
+	if (callExpr == nullptr) {
+		return "";
+	}
+
+	const clang::Expr* callee = callExpr->getCallee();
+	if (callee == nullptr) {
+		return "";
+	}
+
+	callee = callee->IgnoreParenImpCasts();
+	if (const auto* declRef = llvm::dyn_cast<clang::DeclRefExpr>(callee)) {
+		return declRef->getNameInfo().getAsString();
+	}
+	if (const auto* memberExpr = llvm::dyn_cast<clang::MemberExpr>(callee)) {
+		return memberExpr->getMemberDecl() ? memberExpr->getMemberDecl()->getNameAsString() : "";
+	}
+
+	return "";
+}
+
+std::vector<std::string> CollectDefs(const clang::Stmt* stmt) {
+	std::vector<std::string> defs;
+	if (stmt == nullptr) {
+		return defs;
+	}
+
+	if (const auto* declStmt = llvm::dyn_cast<clang::DeclStmt>(stmt)) {
+		for (const clang::Decl* decl : declStmt->decls()) {
+			if (const auto* varDecl = llvm::dyn_cast<clang::VarDecl>(decl)) {
+				AddUnique(defs, varDecl->getNameAsString());
+			}
+		}
+		return defs;
+	}
+
+	if (const auto* binaryOp = llvm::dyn_cast<clang::BinaryOperator>(stmt)) {
+		if (binaryOp->isAssignmentOp() || binaryOp->isCompoundAssignmentOp()) {
+			for (const std::string& name : CollectDeclRefs(binaryOp->getLHS())) {
+				AddUnique(defs, name);
+			}
+		}
+		return defs;
+	}
+
+	if (const auto* unaryOp = llvm::dyn_cast<clang::UnaryOperator>(stmt)) {
+		if (unaryOp->isIncrementDecrementOp()) {
+			for (const std::string& name : CollectDeclRefs(unaryOp->getSubExpr())) {
+				AddUnique(defs, name);
+			}
+		}
+		return defs;
+	}
+
+	return defs;
+}
+
+std::vector<std::string> CollectUses(const clang::Stmt* stmt) {
+	std::vector<std::string> uses;
+	if (stmt == nullptr) {
+		return uses;
+	}
+
+	if (const auto* declStmt = llvm::dyn_cast<clang::DeclStmt>(stmt)) {
+		for (const clang::Decl* decl : declStmt->decls()) {
+			const auto* varDecl = llvm::dyn_cast<clang::VarDecl>(decl);
+			if (varDecl == nullptr || !varDecl->hasInit()) {
+				continue;
+			}
+			for (const std::string& name : CollectDeclRefs(varDecl->getInit())) {
+				AddUnique(uses, name);
+			}
+		}
+		return uses;
+	}
+
+	if (const auto* binaryOp = llvm::dyn_cast<clang::BinaryOperator>(stmt)) {
+		if (binaryOp->isAssignmentOp()) {
+			for (const std::string& name : CollectDeclRefs(binaryOp->getRHS())) {
+				AddUnique(uses, name);
+			}
+			return uses;
+		}
+
+		if (binaryOp->isCompoundAssignmentOp()) {
+			for (const std::string& name : CollectDeclRefs(binaryOp->getLHS())) {
+				AddUnique(uses, name);
+			}
+			for (const std::string& name : CollectDeclRefs(binaryOp->getRHS())) {
+				AddUnique(uses, name);
+			}
+			return uses;
+		}
+	}
+
+	if (const auto* unaryOp = llvm::dyn_cast<clang::UnaryOperator>(stmt)) {
+		if (unaryOp->isIncrementDecrementOp()) {
+			for (const std::string& name : CollectDeclRefs(unaryOp->getSubExpr())) {
+				AddUnique(uses, name);
+			}
+			return uses;
+		}
+	}
+
+	for (const std::string& name : CollectDeclRefs(stmt)) {
+		AddUnique(uses, name);
+	}
+	return uses;
+}
+
+struct NormalizedStmtRef {
+	const clang::Stmt* stmt = nullptr;
+	const clang::CFGBlock* block = nullptr;
+	int64_t indexInBlock = -1;
+	bool isTerminator = false;
+};
+
+struct ControlEdge {
+	int64_t from = -1;
+	int64_t to = -1;
+	std::string kind;
+};
+
+const clang::CFGBlock* FindFirstStmtBlockOnPath(const clang::CFGBlock* startBlock) {
+	if (startBlock == nullptr) {
+		return nullptr;
+	}
+
+	std::deque<const clang::CFGBlock*> worklist;
+	llvm::SmallPtrSet<const clang::CFGBlock*, 32> visited;
+	worklist.push_back(startBlock);
+	visited.insert(startBlock);
+
+	while (!worklist.empty()) {
+		const clang::CFGBlock* current = worklist.front();
+		worklist.pop_front();
+
+		bool hasStmt = false;
+		for (clang::CFGElement element : *current) {
+			if (element.getAs<clang::CFGStmt>().has_value()) {
+				hasStmt = true;
+				break;
+			}
+		}
+		if (!hasStmt && current->getTerminatorStmt() != nullptr) {
+			hasStmt = true;
+		}
+
+		if (hasStmt) {
+			return current;
+		}
+
+		for (auto succIt = current->succ_begin(); succIt != current->succ_end(); ++succIt) {
+			const clang::CFGBlock* succBlock = succIt->getReachableBlock();
+			if (succBlock == nullptr || visited.contains(succBlock)) {
+				continue;
+			}
+			visited.insert(succBlock);
+			worklist.push_back(succBlock);
+		}
+	}
+
+	return nullptr;
+}
+
+std::vector<NormalizedStmtRef> CollectBlockStmtRefs(const clang::CFGBlock* block) {
+	std::vector<NormalizedStmtRef> refs;
+	if (block == nullptr) {
+		return refs;
+	}
+
+	int64_t idx = 0;
+	for (clang::CFGElement element : *block) {
+		if (auto cfgStmt = element.getAs<clang::CFGStmt>()) {
+			const clang::Stmt* stmt = cfgStmt->getStmt();
+			if (stmt == nullptr) {
+				continue;
+			}
+
+			refs.push_back(NormalizedStmtRef{stmt, block, idx, false});
+			++idx;
+		}
+	}
+
+	if (const clang::Stmt* terminator = block->getTerminatorStmt()) {
+		if (refs.empty() || refs.back().stmt != terminator) {
+			refs.push_back(NormalizedStmtRef{terminator, block, idx, true});
+		}
+	}
+
+	return refs;
 }
 
 llvm::json::Object BuildAstNodeJson(const clang::Stmt* stmt, const clang::ASTContext& context) {
@@ -213,6 +543,252 @@ llvm::json::Object CFGPrinter::BuildFunctionCfgJson(
 
 	cfgJson["blocks"] = std::move(blocksJson);
 	return cfgJson;
+}
+
+llvm::json::Object CFGPrinter::BuildFunctionNormalizedIrJson(
+	const clang::FunctionDecl& functionDecl,
+	const clang::CFG* cfg,
+	clang::ASTContext& context) {
+	(void)functionDecl;
+	llvm::json::Object irJson;
+	irJson["version"] = "v1";
+
+	if (cfg == nullptr) {
+		irJson["status"] = "failed";
+		irJson["nodes"] = llvm::json::Array();
+		llvm::json::Object edges;
+		edges["control_flow"] = llvm::json::Array();
+		irJson["edges"] = std::move(edges);
+		return irJson;
+	}
+
+	irJson["status"] = "ok";
+
+	std::vector<const clang::CFGBlock*> blocks;
+	blocks.reserve(cfg->size());
+	for (const clang::CFGBlock* block : *cfg) {
+		blocks.push_back(block);
+	}
+	std::sort(blocks.begin(), blocks.end(), [](const clang::CFGBlock* lhs, const clang::CFGBlock* rhs) {
+		return lhs->getBlockID() < rhs->getBlockID();
+	});
+
+	std::unordered_map<const clang::CFGBlock*, std::vector<NormalizedStmtRef>> blockToStmts;
+	std::unordered_map<const clang::CFGBlock*, std::vector<int64_t>> blockStmtIds;
+	std::unordered_map<const clang::CFGBlock*, int64_t> firstStmtIdInBlock;
+
+	struct NodeRecord {
+		int64_t stmtId;
+		NormalizedStmtRef ref;
+	};
+	std::vector<NodeRecord> orderedNodes;
+
+	int64_t nextStmtId = 1;
+	for (const clang::CFGBlock* block : blocks) {
+		std::vector<NormalizedStmtRef> refs = CollectBlockStmtRefs(block);
+		if (refs.empty()) {
+			blockToStmts.emplace(block, std::move(refs));
+			blockStmtIds.emplace(block, std::vector<int64_t>());
+			continue;
+		}
+
+		std::vector<int64_t> ids;
+		ids.reserve(refs.size());
+
+		for (const NormalizedStmtRef& ref : refs) {
+			orderedNodes.push_back(NodeRecord{nextStmtId, ref});
+			ids.push_back(nextStmtId);
+			if (!firstStmtIdInBlock.count(block)) {
+				firstStmtIdInBlock[block] = nextStmtId;
+			}
+			++nextStmtId;
+		}
+
+		blockToStmts.emplace(block, std::move(refs));
+		blockStmtIds.emplace(block, std::move(ids));
+	}
+
+	std::vector<ControlEdge> edges;
+	for (const clang::CFGBlock* block : blocks) {
+		auto it = blockToStmts.find(block);
+		if (it == blockToStmts.end() || it->second.empty()) {
+			continue;
+		}
+
+		const std::vector<NormalizedStmtRef>& refs = it->second;
+		auto idIt = blockStmtIds.find(block);
+		if (idIt == blockStmtIds.end() || idIt->second.size() != refs.size()) {
+			continue;
+		}
+		const std::vector<int64_t>& ids = idIt->second;
+
+		for (size_t i = 1; i < refs.size(); ++i) {
+			edges.push_back(ControlEdge{ids[i - 1], ids[i], "fallthrough"});
+		}
+
+		const int64_t fromStmtId = ids.back();
+		for (auto succIt = block->succ_begin(); succIt != block->succ_end(); ++succIt) {
+			const clang::CFGBlock* succ = succIt->getReachableBlock();
+			if (succ == nullptr) {
+				continue;
+			}
+
+			const clang::CFGBlock* nextBlock = FindFirstStmtBlockOnPath(succ);
+			if (nextBlock == nullptr) {
+				continue;
+			}
+
+			auto firstIt = firstStmtIdInBlock.find(nextBlock);
+			if (firstIt == firstStmtIdInBlock.end()) {
+				continue;
+			}
+
+			edges.push_back(ControlEdge{
+				fromStmtId,
+				firstIt->second,
+				(nextBlock->getBlockID() <= block->getBlockID()) ? "backedge" : "branch"});
+		}
+	}
+
+	std::set<std::pair<int64_t, int64_t>> dedupEdgeSet;
+	std::vector<ControlEdge> dedupEdges;
+	for (const ControlEdge& edge : edges) {
+		if (edge.from <= 0 || edge.to <= 0) {
+			continue;
+		}
+		if (dedupEdgeSet.insert({edge.from, edge.to}).second) {
+			dedupEdges.push_back(edge);
+		}
+	}
+
+	std::unordered_map<int64_t, std::vector<int64_t>> predMap;
+	std::unordered_map<int64_t, std::vector<int64_t>> succMap;
+	for (const ControlEdge& edge : dedupEdges) {
+		succMap[edge.from].push_back(edge.to);
+		predMap[edge.to].push_back(edge.from);
+	}
+
+	auto sortAndUnique = [](std::vector<int64_t>& values) {
+		std::sort(values.begin(), values.end());
+		values.erase(std::unique(values.begin(), values.end()), values.end());
+	};
+
+	for (auto& kv : predMap) {
+		sortAndUnique(kv.second);
+	}
+	for (auto& kv : succMap) {
+		sortAndUnique(kv.second);
+	}
+
+	llvm::json::Array nodesJson;
+	const clang::SourceManager& sourceManager = context.getSourceManager();
+	for (const NodeRecord& nodeRecord : orderedNodes) {
+		const int64_t stmtId = nodeRecord.stmtId;
+		const NormalizedStmtRef& ref = nodeRecord.ref;
+
+		llvm::json::Object node;
+		node["stmt_id"] = stmtId;
+		node["bb_id"] = static_cast<int64_t>(ref.block->getBlockID());
+		node["index_in_bb"] = ref.indexInBlock;
+
+		llvm::json::Object loc;
+		loc["file"] = GetFilenameString(sourceManager, ref.stmt->getBeginLoc());
+		loc["line"] = GetLine(sourceManager, ref.stmt->getBeginLoc());
+		loc["column"] = GetColumn(sourceManager, ref.stmt->getBeginLoc());
+		node["loc"] = std::move(loc);
+
+		const clang::CallExpr* callExpr = FindTopCallExpr(ref.stmt);
+		std::string nodeType = GuessNodeType(ref.stmt);
+		if (callExpr != nullptr) {
+			nodeType = "call";
+		}
+
+		node["type"] = nodeType;
+		node["ast_kind"] = ref.stmt->getStmtClassName();
+		node["text"] = RenderStmt(ref.stmt, context.getLangOpts());
+		node["is_terminator"] = ref.isTerminator;
+
+		std::vector<std::string> defs = CollectDefs(ref.stmt);
+		std::vector<std::string> uses = CollectUses(ref.stmt);
+
+		llvm::json::Array defsJson;
+		for (const std::string& v : defs) {
+			defsJson.push_back(v);
+		}
+		node["defs"] = std::move(defsJson);
+
+		llvm::json::Array usesJson;
+		for (const std::string& v : uses) {
+			usesJson.push_back(v);
+		}
+		node["uses"] = std::move(usesJson);
+
+		if (callExpr != nullptr) {
+			llvm::json::Object call;
+			call["callee"] = GetCalleeName(callExpr);
+
+			llvm::json::Array args;
+			for (unsigned i = 0; i < callExpr->getNumArgs(); ++i) {
+				args.push_back(RenderStmt(callExpr->getArg(i), context.getLangOpts()));
+			}
+			call["args"] = std::move(args);
+
+			std::string retTarget;
+			if (const auto* binaryOp = llvm::dyn_cast<clang::BinaryOperator>(ref.stmt)) {
+				if (binaryOp->isAssignmentOp() || binaryOp->isCompoundAssignmentOp()) {
+					std::vector<std::string> lhsNames = CollectDeclRefs(binaryOp->getLHS());
+					if (!lhsNames.empty()) {
+						retTarget = lhsNames.front();
+					}
+				}
+			} else if (const auto* declStmt = llvm::dyn_cast<clang::DeclStmt>(ref.stmt)) {
+				for (const clang::Decl* decl : declStmt->decls()) {
+					if (const auto* varDecl = llvm::dyn_cast<clang::VarDecl>(decl)) {
+						if (varDecl->hasInit() && llvm::isa<clang::CallExpr>(varDecl->getInit()->IgnoreParenImpCasts())) {
+							retTarget = varDecl->getNameAsString();
+							break;
+						}
+					}
+				}
+			}
+			call["ret_target"] = retTarget;
+			node["call"] = std::move(call);
+		}
+
+		llvm::json::Array predJson;
+		if (predMap.count(stmtId)) {
+			for (int64_t p : predMap[stmtId]) {
+				predJson.push_back(p);
+			}
+		}
+		node["ctrl_pred"] = std::move(predJson);
+
+		llvm::json::Array succJson;
+		if (succMap.count(stmtId)) {
+			for (int64_t s : succMap[stmtId]) {
+				succJson.push_back(s);
+			}
+		}
+		node["ctrl_succ"] = std::move(succJson);
+
+		nodesJson.push_back(std::move(node));
+	}
+	irJson["nodes"] = std::move(nodesJson);
+
+	llvm::json::Array edgesJson;
+	for (const ControlEdge& edge : dedupEdges) {
+		llvm::json::Object edgeJson;
+		edgeJson["from"] = edge.from;
+		edgeJson["to"] = edge.to;
+		edgeJson["kind"] = edge.kind;
+		edgesJson.push_back(std::move(edgeJson));
+	}
+
+	llvm::json::Object edgesObj;
+	edgesObj["control_flow"] = std::move(edgesJson);
+	irJson["edges"] = std::move(edgesObj);
+
+	return irJson;
 }
 
 } // namespace cfgbuilder::output
