@@ -1,8 +1,0 @@
-{
-    "cmake.configureSettings": {
-    "CMAKE_C_COMPILER": "/usr/bin/clang-18",
-    "CMAKE_CXX_COMPILER": "/usr/bin/clang++-18",
-    "LLVM_DIR": "/usr/lib/llvm-18/lib/cmake/llvm",
-    "Clang_DIR": "/usr/lib/llvm-18/lib/cmake/clang"
-    }
-}
