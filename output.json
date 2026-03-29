@@ -1030,9 +1030,7 @@
             "stmt_id": 3,
             "text": "ERR_PTR(-14)",
             "type": "call",
-            "uses": [
-              "ERR_PTR"
-            ]
+            "uses": []
           },
           {
             "ast_kind": "ImplicitCastExpr",
@@ -1054,9 +1052,7 @@
             "stmt_id": 4,
             "text": "ERR_PTR(-14)",
             "type": "expr",
-            "uses": [
-              "ERR_PTR"
-            ]
+            "uses": []
           },
           {
             "ast_kind": "ReturnStmt",
@@ -1076,9 +1072,7 @@
             "stmt_id": 5,
             "text": "return ERR_PTR(-14); ",
             "type": "return",
-            "uses": [
-              "ERR_PTR"
-            ]
+            "uses": []
           },
           {
             "ast_kind": "BinaryOperator",
@@ -1102,8 +1096,6 @@
             "text": "__must_check_overflow(__builtin_add_overflow(offset, size, &end)) || end > ctx->cq_wait_size",
             "type": "expr",
             "uses": [
-              "__must_check_overflow",
-              "__builtin_add_overflow",
               "offset",
               "size",
               "end",
@@ -1139,9 +1131,6 @@
             "text": "__builtin_expect(!!(__must_check_overflow(__builtin_add_overflow(offset, size, &end)) || end > ctx->cq_wait_size), 0)",
             "type": "call",
             "uses": [
-              "__builtin_expect",
-              "__must_check_overflow",
-              "__builtin_add_overflow",
               "offset",
               "size",
               "end",
@@ -1170,14 +1159,10 @@
             "text": "if (__builtin_expect(!!(__must_check_overflow(__builtin_add_overflow(offset, size, &end)) || end > ctx->cq_wait_size), 0)) return ERR_PTR(-14); ",
             "type": "branch",
             "uses": [
-              "__builtin_expect",
-              "__must_check_overflow",
-              "__builtin_add_overflow",
               "offset",
               "size",
               "end",
-              "ctx",
-              "ERR_PTR"
+              "ctx"
             ]
           },
           {
@@ -1235,7 +1220,6 @@
             "text": "__builtin_add_overflow(offset, size, &end)",
             "type": "call",
             "uses": [
-              "__builtin_add_overflow",
               "offset",
               "size",
               "end"
@@ -1269,8 +1253,6 @@
             "text": "__must_check_overflow(__builtin_add_overflow(offset, size, &end))",
             "type": "call",
             "uses": [
-              "__must_check_overflow",
-              "__builtin_add_overflow",
               "offset",
               "size",
               "end"
@@ -1297,8 +1279,6 @@
             "text": "__must_check_overflow(__builtin_add_overflow(offset, size, &end))",
             "type": "expr",
             "uses": [
-              "__must_check_overflow",
-              "__builtin_add_overflow",
               "offset",
               "size",
               "end"
@@ -1326,8 +1306,6 @@
             "text": "__must_check_overflow(__builtin_add_overflow(offset, size, &end)) || end > ctx->cq_wait_size",
             "type": "expr",
             "uses": [
-              "__must_check_overflow",
-              "__builtin_add_overflow",
               "offset",
               "size",
               "end",
@@ -1361,9 +1339,7 @@
             "stmt_id": 14,
             "text": "ERR_PTR(-14)",
             "type": "call",
-            "uses": [
-              "ERR_PTR"
-            ]
+            "uses": []
           },
           {
             "ast_kind": "ImplicitCastExpr",
@@ -1385,9 +1361,7 @@
             "stmt_id": 15,
             "text": "ERR_PTR(-14)",
             "type": "expr",
-            "uses": [
-              "ERR_PTR"
-            ]
+            "uses": []
           },
           {
             "ast_kind": "ReturnStmt",
@@ -1407,9 +1381,7 @@
             "stmt_id": 16,
             "text": "return ERR_PTR(-14); ",
             "type": "return",
-            "uses": [
-              "ERR_PTR"
-            ]
+            "uses": []
           },
           {
             "ast_kind": "DeclStmt",
@@ -1512,7 +1484,6 @@
             "text": "__builtin_expect(!!(offset % sizeof(long)), 0)",
             "type": "call",
             "uses": [
-              "__builtin_expect",
               "offset"
             ]
           },
@@ -1538,9 +1509,7 @@
             "text": "if (__builtin_expect(!!(offset % sizeof(long)), 0)) return ERR_PTR(-14); ",
             "type": "branch",
             "uses": [
-              "__builtin_expect",
-              "offset",
-              "ERR_PTR"
+              "offset"
             ]
           }
         ],

@@ -11,6 +11,7 @@
 #include "clang/AST/Stmt.h"
 #include "clang/Basic/SourceLocation.h"
 #include "clang/Basic/SourceManager.h"
+#include "clang/Lex/Lexer.h"
 #include "llvm/ADT/APSInt.h"
 #include "llvm/ADT/SmallPtrSet.h"
 #include "llvm/ADT/SmallVector.h"
@@ -28,9 +29,22 @@
 namespace cfgbuilder::output {
 namespace {
 
-std::string GetLocationString(const clang::SourceManager& sourceManager, clang::SourceLocation location) {
-	const clang::SourceLocation expansionLocation = sourceManager.getExpansionLoc(location);
-	const clang::PresumedLoc presumedLoc = sourceManager.getPresumedLoc(expansionLocation);
+clang::SourceLocation ResolveOutputLoc(
+	const clang::SourceManager& sourceManager,
+	clang::SourceLocation location,
+	bool useSpellingLoc) {
+	if (location.isInvalid()) {
+		return location;
+	}
+	return useSpellingLoc ? sourceManager.getSpellingLoc(location) : sourceManager.getExpansionLoc(location);
+}
+
+std::string GetLocationString(
+	const clang::SourceManager& sourceManager,
+	clang::SourceLocation location,
+	bool useSpellingLoc) {
+	const clang::SourceLocation outputLocation = ResolveOutputLoc(sourceManager, location, useSpellingLoc);
+	const clang::PresumedLoc presumedLoc = sourceManager.getPresumedLoc(outputLocation);
 	if (!presumedLoc.isValid()) {
 		return "<invalid>";
 	}
@@ -40,9 +54,12 @@ std::string GetLocationString(const clang::SourceManager& sourceManager, clang::
 		std::to_string(presumedLoc.getColumn());
 }
 
-std::string GetFilenameString(const clang::SourceManager& sourceManager, clang::SourceLocation location) {
-	const clang::SourceLocation expansionLocation = sourceManager.getExpansionLoc(location);
-	const clang::PresumedLoc presumedLoc = sourceManager.getPresumedLoc(expansionLocation);
+std::string GetFilenameString(
+	const clang::SourceManager& sourceManager,
+	clang::SourceLocation location,
+	bool useSpellingLoc) {
+	const clang::SourceLocation outputLocation = ResolveOutputLoc(sourceManager, location, useSpellingLoc);
+	const clang::PresumedLoc presumedLoc = sourceManager.getPresumedLoc(outputLocation);
 	if (!presumedLoc.isValid()) {
 		return "<invalid>";
 	}
@@ -94,22 +111,121 @@ std::string RenderStmt(const clang::Stmt* stmt, const clang::LangOptions& langOp
 	return rendered;
 }
 
-int64_t GetLine(const clang::SourceManager& sourceManager, clang::SourceLocation location) {
-	const clang::SourceLocation expansionLocation = sourceManager.getExpansionLoc(location);
-	const clang::PresumedLoc presumedLoc = sourceManager.getPresumedLoc(expansionLocation);
+std::string RenderBranchCondition(const clang::Stmt* stmt, const clang::LangOptions& langOptions) {
+	if (stmt == nullptr) {
+		return "<null-stmt>";
+	}
+
+	const clang::Stmt* condition = nullptr;
+	if (const auto* ifStmt = llvm::dyn_cast<clang::IfStmt>(stmt)) {
+		condition = ifStmt->getCond();
+	} else if (const auto* whileStmt = llvm::dyn_cast<clang::WhileStmt>(stmt)) {
+		condition = whileStmt->getCond();
+	} else if (const auto* doStmt = llvm::dyn_cast<clang::DoStmt>(stmt)) {
+		condition = doStmt->getCond();
+	} else if (const auto* forStmt = llvm::dyn_cast<clang::ForStmt>(stmt)) {
+		condition = forStmt->getCond();
+	} else if (const auto* switchStmt = llvm::dyn_cast<clang::SwitchStmt>(stmt)) {
+		condition = switchStmt->getCond();
+	}
+
+	if (condition == nullptr) {
+		return RenderStmt(stmt, langOptions);
+	}
+
+	return RenderStmt(condition, langOptions);
+}
+
+const clang::Stmt* GetBranchConditionStmt(const clang::Stmt* stmt) {
+	if (stmt == nullptr) {
+		return nullptr;
+	}
+
+	if (const auto* ifStmt = llvm::dyn_cast<clang::IfStmt>(stmt)) {
+		return ifStmt->getCond();
+	}
+	if (const auto* whileStmt = llvm::dyn_cast<clang::WhileStmt>(stmt)) {
+		return whileStmt->getCond();
+	}
+	if (const auto* doStmt = llvm::dyn_cast<clang::DoStmt>(stmt)) {
+		return doStmt->getCond();
+	}
+	if (const auto* forStmt = llvm::dyn_cast<clang::ForStmt>(stmt)) {
+		return forStmt->getCond();
+	}
+	if (const auto* switchStmt = llvm::dyn_cast<clang::SwitchStmt>(stmt)) {
+		return switchStmt->getCond();
+	}
+
+	return nullptr;
+}
+
+int64_t GetLine(
+	const clang::SourceManager& sourceManager,
+	clang::SourceLocation location,
+	bool useSpellingLoc) {
+	const clang::SourceLocation outputLocation = ResolveOutputLoc(sourceManager, location, useSpellingLoc);
+	const clang::PresumedLoc presumedLoc = sourceManager.getPresumedLoc(outputLocation);
 	if (!presumedLoc.isValid()) {
 		return -1;
 	}
 	return static_cast<int64_t>(presumedLoc.getLine());
 }
 
-int64_t GetColumn(const clang::SourceManager& sourceManager, clang::SourceLocation location) {
-	const clang::SourceLocation expansionLocation = sourceManager.getExpansionLoc(location);
-	const clang::PresumedLoc presumedLoc = sourceManager.getPresumedLoc(expansionLocation);
+int64_t GetColumn(
+	const clang::SourceManager& sourceManager,
+	clang::SourceLocation location,
+	bool useSpellingLoc) {
+	const clang::SourceLocation outputLocation = ResolveOutputLoc(sourceManager, location, useSpellingLoc);
+	const clang::PresumedLoc presumedLoc = sourceManager.getPresumedLoc(outputLocation);
 	if (!presumedLoc.isValid()) {
 		return -1;
 	}
 	return static_cast<int64_t>(presumedLoc.getColumn());
+}
+
+int64_t GetStmtStartLine(
+	const clang::SourceManager& sourceManager,
+	const clang::Stmt* stmt,
+	bool useSpellingLoc) {
+	if (stmt == nullptr) {
+		return -1;
+	}
+	return GetLine(sourceManager, stmt->getBeginLoc(), useSpellingLoc);
+}
+
+int64_t GetStmtEndLine(
+	const clang::SourceManager& sourceManager,
+	const clang::LangOptions& langOptions,
+	const clang::Stmt* stmt,
+	bool useSpellingLoc) {
+	if (stmt == nullptr) {
+		return -1;
+	}
+
+	clang::SourceLocation endLocation = ResolveOutputLoc(sourceManager, stmt->getEndLoc(), useSpellingLoc);
+	if (endLocation.isInvalid()) {
+		return -1;
+	}
+
+	const clang::SourceLocation tokenEnd =
+		clang::Lexer::getLocForEndOfToken(endLocation, 0, sourceManager, langOptions);
+	if (tokenEnd.isValid()) {
+		endLocation = tokenEnd;
+	}
+
+	return GetLine(sourceManager, endLocation, useSpellingLoc);
+}
+
+llvm::json::Object BuildLineColumnLocJson(
+	const clang::SourceManager& sourceManager,
+	clang::SourceLocation location,
+	bool useSpellingLoc) {
+	llvm::json::Object loc;
+	loc["file"] = GetFilenameString(sourceManager, location, useSpellingLoc);
+	loc["line"] = GetLine(sourceManager, location, useSpellingLoc);
+	loc["column"] = GetColumn(sourceManager, location, useSpellingLoc);
+	return loc;
 }
 
 void AddUnique(std::vector<std::string>& values, const std::string& value) {
@@ -121,31 +237,69 @@ void AddUnique(std::vector<std::string>& values, const std::string& value) {
 	}
 }
 
+struct VarRefInfo {
+	std::string name;
+	std::string varLoc;
+};
+
+void AddUniqueVarRef(std::vector<VarRefInfo>& values, const VarRefInfo& value) {
+	if (value.name.empty()) {
+		return;
+	}
+
+	for (const VarRefInfo& existing : values) {
+		if (existing.name == value.name && existing.varLoc == value.varLoc) {
+			return;
+		}
+	}
+	values.push_back(value);
+}
+
 class DeclRefCollector : public clang::RecursiveASTVisitor<DeclRefCollector> {
 public:
+	explicit DeclRefCollector(const clang::SourceManager& sourceManager) : sourceManager_(sourceManager) {}
+
 	bool VisitDeclRefExpr(clang::DeclRefExpr* declRefExpr) {
 		if (declRefExpr == nullptr) {
 			return true;
 		}
 
-		AddUnique(names_, declRefExpr->getNameInfo().getAsString());
+		const clang::ValueDecl* valueDecl = declRefExpr->getDecl();
+		if (valueDecl == nullptr) {
+			return true;
+		}
+
+		const bool isVariableLike =
+			llvm::isa<clang::VarDecl>(valueDecl) ||
+			llvm::isa<clang::ParmVarDecl>(valueDecl) ||
+			llvm::isa<clang::ImplicitParamDecl>(valueDecl) ||
+			llvm::isa<clang::BindingDecl>(valueDecl);
+		if (!isVariableLike) {
+			return true;
+		}
+
+		VarRefInfo ref;
+		ref.name = declRefExpr->getNameInfo().getAsString();
+		ref.varLoc = GetLocationString(sourceManager_, declRefExpr->getLocation(), true);
+		AddUniqueVarRef(refs_, ref);
 		return true;
 	}
 
-	const std::vector<std::string>& Names() const { return names_; }
+	const std::vector<VarRefInfo>& Refs() const { return refs_; }
 
 private:
-	std::vector<std::string> names_;
+	const clang::SourceManager& sourceManager_;
+	std::vector<VarRefInfo> refs_;
 };
 
-std::vector<std::string> CollectDeclRefs(const clang::Stmt* stmt) {
+std::vector<VarRefInfo> CollectDeclRefs(const clang::Stmt* stmt, const clang::SourceManager& sourceManager) {
 	if (stmt == nullptr) {
 		return {};
 	}
 
-	DeclRefCollector collector;
+	DeclRefCollector collector(sourceManager);
 	collector.TraverseStmt(const_cast<clang::Stmt*>(stmt));
-	return collector.Names();
+	return collector.Refs();
 }
 
 std::string GuessNodeType(const clang::Stmt* stmt) {
@@ -234,8 +388,8 @@ std::string GetCalleeName(const clang::CallExpr* callExpr) {
 	return "";
 }
 
-std::vector<std::string> CollectDefs(const clang::Stmt* stmt) {
-	std::vector<std::string> defs;
+std::vector<VarRefInfo> CollectDefs(const clang::Stmt* stmt, const clang::SourceManager& sourceManager) {
+	std::vector<VarRefInfo> defs;
 	if (stmt == nullptr) {
 		return defs;
 	}
@@ -243,7 +397,10 @@ std::vector<std::string> CollectDefs(const clang::Stmt* stmt) {
 	if (const auto* declStmt = llvm::dyn_cast<clang::DeclStmt>(stmt)) {
 		for (const clang::Decl* decl : declStmt->decls()) {
 			if (const auto* varDecl = llvm::dyn_cast<clang::VarDecl>(decl)) {
-				AddUnique(defs, varDecl->getNameAsString());
+				VarRefInfo ref;
+				ref.name = varDecl->getNameAsString();
+				ref.varLoc = GetLocationString(sourceManager, varDecl->getLocation(), true);
+				AddUniqueVarRef(defs, ref);
 			}
 		}
 		return defs;
@@ -251,8 +408,8 @@ std::vector<std::string> CollectDefs(const clang::Stmt* stmt) {
 
 	if (const auto* binaryOp = llvm::dyn_cast<clang::BinaryOperator>(stmt)) {
 		if (binaryOp->isAssignmentOp() || binaryOp->isCompoundAssignmentOp()) {
-			for (const std::string& name : CollectDeclRefs(binaryOp->getLHS())) {
-				AddUnique(defs, name);
+			for (const VarRefInfo& ref : CollectDeclRefs(binaryOp->getLHS(), sourceManager)) {
+				AddUniqueVarRef(defs, ref);
 			}
 		}
 		return defs;
@@ -260,8 +417,8 @@ std::vector<std::string> CollectDefs(const clang::Stmt* stmt) {
 
 	if (const auto* unaryOp = llvm::dyn_cast<clang::UnaryOperator>(stmt)) {
 		if (unaryOp->isIncrementDecrementOp()) {
-			for (const std::string& name : CollectDeclRefs(unaryOp->getSubExpr())) {
-				AddUnique(defs, name);
+			for (const VarRefInfo& ref : CollectDeclRefs(unaryOp->getSubExpr(), sourceManager)) {
+				AddUniqueVarRef(defs, ref);
 			}
 		}
 		return defs;
@@ -270,9 +427,16 @@ std::vector<std::string> CollectDefs(const clang::Stmt* stmt) {
 	return defs;
 }
 
-std::vector<std::string> CollectUses(const clang::Stmt* stmt) {
-	std::vector<std::string> uses;
+std::vector<VarRefInfo> CollectUses(const clang::Stmt* stmt, const clang::SourceManager& sourceManager) {
+	std::vector<VarRefInfo> uses;
 	if (stmt == nullptr) {
+		return uses;
+	}
+
+	if (const clang::Stmt* branchCond = GetBranchConditionStmt(stmt)) {
+		for (const VarRefInfo& ref : CollectDeclRefs(branchCond, sourceManager)) {
+			AddUniqueVarRef(uses, ref);
+		}
 		return uses;
 	}
 
@@ -282,8 +446,8 @@ std::vector<std::string> CollectUses(const clang::Stmt* stmt) {
 			if (varDecl == nullptr || !varDecl->hasInit()) {
 				continue;
 			}
-			for (const std::string& name : CollectDeclRefs(varDecl->getInit())) {
-				AddUnique(uses, name);
+			for (const VarRefInfo& ref : CollectDeclRefs(varDecl->getInit(), sourceManager)) {
+				AddUniqueVarRef(uses, ref);
 			}
 		}
 		return uses;
@@ -291,18 +455,18 @@ std::vector<std::string> CollectUses(const clang::Stmt* stmt) {
 
 	if (const auto* binaryOp = llvm::dyn_cast<clang::BinaryOperator>(stmt)) {
 		if (binaryOp->isAssignmentOp()) {
-			for (const std::string& name : CollectDeclRefs(binaryOp->getRHS())) {
-				AddUnique(uses, name);
+			for (const VarRefInfo& ref : CollectDeclRefs(binaryOp->getRHS(), sourceManager)) {
+				AddUniqueVarRef(uses, ref);
 			}
 			return uses;
 		}
 
 		if (binaryOp->isCompoundAssignmentOp()) {
-			for (const std::string& name : CollectDeclRefs(binaryOp->getLHS())) {
-				AddUnique(uses, name);
+			for (const VarRefInfo& ref : CollectDeclRefs(binaryOp->getLHS(), sourceManager)) {
+				AddUniqueVarRef(uses, ref);
 			}
-			for (const std::string& name : CollectDeclRefs(binaryOp->getRHS())) {
-				AddUnique(uses, name);
+			for (const VarRefInfo& ref : CollectDeclRefs(binaryOp->getRHS(), sourceManager)) {
+				AddUniqueVarRef(uses, ref);
 			}
 			return uses;
 		}
@@ -310,17 +474,28 @@ std::vector<std::string> CollectUses(const clang::Stmt* stmt) {
 
 	if (const auto* unaryOp = llvm::dyn_cast<clang::UnaryOperator>(stmt)) {
 		if (unaryOp->isIncrementDecrementOp()) {
-			for (const std::string& name : CollectDeclRefs(unaryOp->getSubExpr())) {
-				AddUnique(uses, name);
+			for (const VarRefInfo& ref : CollectDeclRefs(unaryOp->getSubExpr(), sourceManager)) {
+				AddUniqueVarRef(uses, ref);
 			}
 			return uses;
 		}
 	}
 
-	for (const std::string& name : CollectDeclRefs(stmt)) {
-		AddUnique(uses, name);
+	for (const VarRefInfo& ref : CollectDeclRefs(stmt, sourceManager)) {
+		AddUniqueVarRef(uses, ref);
 	}
 	return uses;
+}
+
+llvm::json::Array BuildVarRefsJson(const std::vector<VarRefInfo>& refs) {
+	llvm::json::Array refsJson;
+	for (const VarRefInfo& ref : refs) {
+		llvm::json::Object refJson;
+		refJson["name"] = ref.name;
+		refJson["var_loc"] = ref.varLoc;
+		refsJson.push_back(std::move(refJson));
+	}
+	return refsJson;
 }
 
 struct NormalizedStmtRef {
@@ -411,13 +586,21 @@ llvm::json::Object BuildAstNodeJson(const clang::Stmt* stmt, const clang::ASTCon
 	if (stmt == nullptr) {
 		node["kind"] = "NullStmt";
 		node["location"] = "<invalid>";
+		node["spelling_loc"] = "<invalid>";
+		node["expansion_loc"] = "<invalid>";
+		node["begin"] = -1;
+		node["end"] = -1;
 		node["text"] = "<null-stmt>";
 		node["children"] = llvm::json::Array();
 		return node;
 	}
 
 	node["kind"] = stmt->getStmtClassName();
-	node["location"] = GetLocationString(context.getSourceManager(), stmt->getBeginLoc());
+	node["location"] = GetLocationString(context.getSourceManager(), stmt->getBeginLoc(), false);
+	node["spelling_loc"] = GetLocationString(context.getSourceManager(), stmt->getBeginLoc(), true);
+	node["expansion_loc"] = GetLocationString(context.getSourceManager(), stmt->getBeginLoc(), false);
+	node["begin"] = GetStmtStartLine(context.getSourceManager(), stmt, true);
+	node["end"] = GetStmtEndLine(context.getSourceManager(), context.getLangOpts(), stmt, true);
 	node["text"] = RenderStmt(stmt, context.getLangOpts());
 
 	llvm::json::Object attrs;
@@ -458,7 +641,9 @@ llvm::json::Object CFGPrinter::BuildFunctionAstJson(
 	llvm::json::Object ast;
 	ast["function"] = functionDecl.getNameAsString();
 	ast["return_type"] = functionDecl.getReturnType().getAsString();
-	ast["location"] = GetLocationString(sourceManager, functionDecl.getLocation());
+	ast["location"] = GetLocationString(sourceManager, functionDecl.getLocation(), false);
+	ast["spelling_loc"] = GetLocationString(sourceManager, functionDecl.getLocation(), true);
+	ast["expansion_loc"] = GetLocationString(sourceManager, functionDecl.getLocation(), false);
 
 	llvm::json::Array params;
 	for (unsigned i = 0; i < functionDecl.getNumParams(); ++i) {
@@ -690,11 +875,15 @@ llvm::json::Object CFGPrinter::BuildFunctionNormalizedIrJson(
 		node["stmt_id"] = stmtId;
 		node["bb_id"] = static_cast<int64_t>(ref.block->getBlockID());
 		node["index_in_bb"] = ref.indexInBlock;
+		node["start_line"] = GetStmtStartLine(sourceManager, ref.stmt, false);
+		node["end_line"] = GetStmtEndLine(sourceManager, context.getLangOpts(), ref.stmt, false);
 
 		llvm::json::Object loc;
-		loc["file"] = GetFilenameString(sourceManager, ref.stmt->getBeginLoc());
-		loc["line"] = GetLine(sourceManager, ref.stmt->getBeginLoc());
-		loc["column"] = GetColumn(sourceManager, ref.stmt->getBeginLoc());
+		loc["spelling_loc"] = BuildLineColumnLocJson(sourceManager, ref.stmt->getBeginLoc(), true);
+		loc["expansion_loc"] = BuildLineColumnLocJson(sourceManager, ref.stmt->getBeginLoc(), false);
+		loc["file"] = GetFilenameString(sourceManager, ref.stmt->getBeginLoc(), false);
+		loc["line"] = GetLine(sourceManager, ref.stmt->getBeginLoc(), false);
+		loc["column"] = GetColumn(sourceManager, ref.stmt->getBeginLoc(), false);
 		node["loc"] = std::move(loc);
 
 		const clang::CallExpr* callExpr = FindTopCallExpr(ref.stmt);
@@ -705,23 +894,17 @@ llvm::json::Object CFGPrinter::BuildFunctionNormalizedIrJson(
 
 		node["type"] = nodeType;
 		node["ast_kind"] = ref.stmt->getStmtClassName();
-		node["text"] = RenderStmt(ref.stmt, context.getLangOpts());
+		if (nodeType == "branch") {
+			node["text"] = RenderBranchCondition(ref.stmt, context.getLangOpts());
+		} else {
+			node["text"] = RenderStmt(ref.stmt, context.getLangOpts());
+		}
 		node["is_terminator"] = ref.isTerminator;
 
-		std::vector<std::string> defs = CollectDefs(ref.stmt);
-		std::vector<std::string> uses = CollectUses(ref.stmt);
-
-		llvm::json::Array defsJson;
-		for (const std::string& v : defs) {
-			defsJson.push_back(v);
-		}
-		node["defs"] = std::move(defsJson);
-
-		llvm::json::Array usesJson;
-		for (const std::string& v : uses) {
-			usesJson.push_back(v);
-		}
-		node["uses"] = std::move(usesJson);
+		std::vector<VarRefInfo> defs = CollectDefs(ref.stmt, sourceManager);
+		std::vector<VarRefInfo> uses = CollectUses(ref.stmt, sourceManager);
+		node["defs"] = BuildVarRefsJson(defs);
+		node["uses"] = BuildVarRefsJson(uses);
 
 		if (callExpr != nullptr) {
 			llvm::json::Object call;
@@ -736,9 +919,9 @@ llvm::json::Object CFGPrinter::BuildFunctionNormalizedIrJson(
 			std::string retTarget;
 			if (const auto* binaryOp = llvm::dyn_cast<clang::BinaryOperator>(ref.stmt)) {
 				if (binaryOp->isAssignmentOp() || binaryOp->isCompoundAssignmentOp()) {
-					std::vector<std::string> lhsNames = CollectDeclRefs(binaryOp->getLHS());
-					if (!lhsNames.empty()) {
-						retTarget = lhsNames.front();
+					std::vector<VarRefInfo> lhsRefs = CollectDeclRefs(binaryOp->getLHS(), sourceManager);
+					if (!lhsRefs.empty()) {
+						retTarget = lhsRefs.front().name;
 					}
 				}
 			} else if (const auto* declStmt = llvm::dyn_cast<clang::DeclStmt>(ref.stmt)) {

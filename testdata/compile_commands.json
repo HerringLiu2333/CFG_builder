@@ -3,5 +3,20 @@
     "directory": "/home/niuniu/CFG_builder/testdata",
     "command": "clang-18 -std=gnu11 -c /home/niuniu/CFG_builder/testdata/simple.c -o /tmp/simple.o",
     "file": "/home/niuniu/CFG_builder/testdata/simple.c"
+  },
+  {
+    "directory": "/home/niuniu/CFG_builder/testdata",
+    "command": "clang-18 -std=gnu11 -c /home/niuniu/CFG_builder/testdata/stmt_begin_end.c -o /tmp/stmt_begin_end.o",
+    "file": "/home/niuniu/CFG_builder/testdata/stmt_begin_end.c"
+  },
+  {
+    "directory": "/home/niuniu/CFG_builder/testdata",
+    "command": "clang-18 -std=gnu11 -c /home/niuniu/CFG_builder/testdata/var_loc_case.c -o /tmp/var_loc_case.o",
+    "file": "/home/niuniu/CFG_builder/testdata/var_loc_case.c"
+  },
+  {
+    "directory": "/home/niuniu/CFG_builder/testdata",
+    "command": "clang-18 -std=gnu11 -c /home/niuniu/CFG_builder/testdata/control_flow_all.c -o /tmp/control_flow_all.o",
+    "file": "/home/niuniu/CFG_builder/testdata/control_flow_all.c"
   }
 ]
