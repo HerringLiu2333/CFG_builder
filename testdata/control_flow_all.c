@@ -111,3 +111,17 @@ int combo_for_nested_if(int n) {
 	return sum + 1;
 }
 
+int if_multi_conditions(int a, int b, int c, int d) {
+	int out = 0;
+
+	// if 条件中包含多个判断（&& / || / !）
+	if ((a > 0 && b < 10) || (c == 3 && !d)) {
+		out = 1;
+	} else if ((a == b) && (c != d) && (a + c > b + d)) {
+		out = 2;
+	} else {
+		out = 3;
+	}
+
+	return out;
+}

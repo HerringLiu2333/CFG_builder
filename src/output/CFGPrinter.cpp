@@ -581,15 +581,23 @@ std::vector<NormalizedStmtRef> CollectBlockStmtRefs(const clang::CFGBlock* block
 	return refs;
 }
 
-llvm::json::Object BuildAstNodeJson(const clang::Stmt* stmt, const clang::ASTContext& context) {
+struct ControlFlowContext {
+	std::string owner;
+	std::string slot;
+};
+
+llvm::json::Object BuildAstNodeJson(
+	const clang::Stmt* stmt,
+	const clang::ASTContext& context,
+	const ControlFlowContext* controlFlowContext) {
 	llvm::json::Object node;
 	if (stmt == nullptr) {
 		node["kind"] = "NullStmt";
 		node["location"] = "<invalid>";
 		node["spelling_loc"] = "<invalid>";
 		node["expansion_loc"] = "<invalid>";
-		node["begin"] = -1;
-		node["end"] = -1;
+		node["start_line"] = -1;
+		node["end_line"] = -1;
 		node["text"] = "<null-stmt>";
 		node["children"] = llvm::json::Array();
 		return node;
@@ -599,9 +607,15 @@ llvm::json::Object BuildAstNodeJson(const clang::Stmt* stmt, const clang::ASTCon
 	node["location"] = GetLocationString(context.getSourceManager(), stmt->getBeginLoc(), false);
 	node["spelling_loc"] = GetLocationString(context.getSourceManager(), stmt->getBeginLoc(), true);
 	node["expansion_loc"] = GetLocationString(context.getSourceManager(), stmt->getBeginLoc(), false);
-	node["begin"] = GetStmtStartLine(context.getSourceManager(), stmt, true);
-	node["end"] = GetStmtEndLine(context.getSourceManager(), context.getLangOpts(), stmt, true);
+	node["start_line"] = GetStmtStartLine(context.getSourceManager(), stmt, true);
+	node["end_line"] = GetStmtEndLine(context.getSourceManager(), context.getLangOpts(), stmt, true);
 	node["text"] = RenderStmt(stmt, context.getLangOpts());
+	if (controlFlowContext != nullptr) {
+		llvm::json::Object cfContext;
+		cfContext["owner"] = controlFlowContext->owner;
+		cfContext["slot"] = controlFlowContext->slot;
+		node["cf_context"] = std::move(cfContext);
+	}
 
 	llvm::json::Object attrs;
 	if (const auto* binaryOp = llvm::dyn_cast<clang::BinaryOperator>(stmt)) {
@@ -623,9 +637,37 @@ llvm::json::Object BuildAstNodeJson(const clang::Stmt* stmt, const clang::ASTCon
 	node["attrs"] = std::move(attrs);
 
 	llvm::json::Array children;
+	const clang::Stmt* branchCondition = GetBranchConditionStmt(stmt);
+	const std::string stmtKind = stmt->getStmtClassName();
+	ControlFlowContext conditionContext;
+	conditionContext.owner = stmtKind;
+	conditionContext.slot = "cond";
+	ControlFlowContext forInitContext;
+	forInitContext.owner = "ForStmt";
+	forInitContext.slot = "init";
+	ControlFlowContext forIncContext;
+	forIncContext.owner = "ForStmt";
+	forIncContext.slot = "inc";
+	const clang::Stmt* forInit = nullptr;
+	const clang::Stmt* forInc = nullptr;
+	if (const auto* forStmt = llvm::dyn_cast<clang::ForStmt>(stmt)) {
+		forInit = forStmt->getInit();
+		forInc = forStmt->getInc();
+	}
 	for (const clang::Stmt* child : stmt->children()) {
 		if (child != nullptr) {
-			children.push_back(BuildAstNodeJson(child, context));
+			const bool isConditionChild = (branchCondition != nullptr && child == branchCondition);
+			const bool isForInitChild = (forInit != nullptr && child == forInit);
+			const bool isForIncChild = (forInc != nullptr && child == forInc);
+			const ControlFlowContext* childContext = nullptr;
+			if (isConditionChild) {
+				childContext = &conditionContext;
+			} else if (isForInitChild) {
+				childContext = &forInitContext;
+			} else if (isForIncChild) {
+				childContext = &forIncContext;
+			}
+			children.push_back(BuildAstNodeJson(child, context, childContext));
 		}
 	}
 	node["children"] = std::move(children);
@@ -655,7 +697,7 @@ llvm::json::Object CFGPrinter::BuildFunctionAstJson(
 	}
 	ast["params"] = std::move(params);
 
-	ast["body"] = BuildAstNodeJson(functionDecl.getBody(), context);
+	ast["body"] = BuildAstNodeJson(functionDecl.getBody(), context, nullptr);
 	return ast;
 }
 
