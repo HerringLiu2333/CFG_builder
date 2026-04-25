@@ -1227,7 +1227,7 @@
 				}
 			],
 			"type" : "PATH",
-			"value" : "CURL_INCLUDE_DIR-NOTFOUND"
+			"value" : "/usr/include/x86_64-linux-gnu"
 		},
 		{
 			"name" : "CURL_LIBRARY_DEBUG",
@@ -1259,7 +1259,7 @@
 				}
 			],
 			"type" : "FILEPATH",
-			"value" : "CURL_LIBRARY_RELEASE-NOTFOUND"
+			"value" : "/usr/lib/x86_64-linux-gnu/libcurl.so"
 		},
 		{
 			"name" : "Clang_DIR",
@@ -1336,6 +1336,18 @@
 			],
 			"type" : "FILEPATH",
 			"value" : "/usr/lib/x86_64-linux-gnu/libffi.a"
+		},
+		{
+			"name" : "FIND_PACKAGE_MESSAGE_DETAILS_CURL",
+			"properties" : 
+			[
+				{
+					"name" : "HELPSTRING",
+					"value" : "Details about finding CURL"
+				}
+			],
+			"type" : "INTERNAL",
+			"value" : "[/usr/lib/x86_64-linux-gnu/libcurl.so][/usr/include/x86_64-linux-gnu][c ][v8.5.0()]"
 		},
 		{
 			"name" : "FIND_PACKAGE_MESSAGE_DETAILS_FFI",
@@ -1531,7 +1543,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : ""
+			"value" : "-I/usr/include/x86_64-linux-gnu"
 		},
 		{
 			"name" : "PC_CURL_CFLAGS_I",
@@ -1567,10 +1579,46 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : ""
+			"value" : "1"
 		},
 		{
 			"name" : "PC_CURL_INCLUDEDIR",
+			"properties" : 
+			[
+				{
+					"name" : "HELPSTRING",
+					"value" : ""
+				}
+			],
+			"type" : "INTERNAL",
+			"value" : "/usr/include/x86_64-linux-gnu"
+		},
+		{
+			"name" : "PC_CURL_INCLUDE_DIRS",
+			"properties" : 
+			[
+				{
+					"name" : "HELPSTRING",
+					"value" : ""
+				}
+			],
+			"type" : "INTERNAL",
+			"value" : "/usr/include/x86_64-linux-gnu"
+		},
+		{
+			"name" : "PC_CURL_LDFLAGS",
+			"properties" : 
+			[
+				{
+					"name" : "HELPSTRING",
+					"value" : ""
+				}
+			],
+			"type" : "INTERNAL",
+			"value" : "-L/usr/lib/x86_64-linux-gnu;-lcurl"
+		},
+		{
+			"name" : "PC_CURL_LDFLAGS_OTHER",
 			"properties" : 
 			[
 				{
@@ -1591,7 +1639,31 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : ""
+			"value" : "/usr/lib/x86_64-linux-gnu"
+		},
+		{
+			"name" : "PC_CURL_LIBRARIES",
+			"properties" : 
+			[
+				{
+					"name" : "HELPSTRING",
+					"value" : ""
+				}
+			],
+			"type" : "INTERNAL",
+			"value" : "curl"
+		},
+		{
+			"name" : "PC_CURL_LIBRARY_DIRS",
+			"properties" : 
+			[
+				{
+					"name" : "HELPSTRING",
+					"value" : ""
+				}
+			],
+			"type" : "INTERNAL",
+			"value" : "/usr/lib/x86_64-linux-gnu"
 		},
 		{
 			"name" : "PC_CURL_LIBS",
@@ -1651,7 +1723,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : ""
+			"value" : "libcurl"
 		},
 		{
 			"name" : "PC_CURL_PREFIX",
@@ -1663,7 +1735,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : ""
+			"value" : "/usr"
 		},
 		{
 			"name" : "PC_CURL_STATIC_CFLAGS",
@@ -1675,7 +1747,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : ""
+			"value" : "-I/usr/include/x86_64-linux-gnu"
 		},
 		{
 			"name" : "PC_CURL_STATIC_CFLAGS_I",
@@ -1702,6 +1774,42 @@
 			"value" : ""
 		},
 		{
+			"name" : "PC_CURL_STATIC_INCLUDE_DIRS",
+			"properties" : 
+			[
+				{
+					"name" : "HELPSTRING",
+					"value" : ""
+				}
+			],
+			"type" : "INTERNAL",
+			"value" : "/usr/include/x86_64-linux-gnu"
+		},
+		{
+			"name" : "PC_CURL_STATIC_LDFLAGS",
+			"properties" : 
+			[
+				{
+					"name" : "HELPSTRING",
+					"value" : ""
+				}
+			],
+			"type" : "INTERNAL",
+			"value" : "-L/usr/lib/x86_64-linux-gnu;-lcurl;-lnghttp2;-lidn2;-lrtmp;-lssh;-lssh;-lpsl;-lnettle;-lgnutls;-lgssapi_krb5;-llber;-lldap;-llber;-lzstd;-lbrotlidec;-lz"
+		},
+		{
+			"name" : "PC_CURL_STATIC_LDFLAGS_OTHER",
+			"properties" : 
+			[
+				{
+					"name" : "HELPSTRING",
+					"value" : ""
+				}
+			],
+			"type" : "INTERNAL",
+			"value" : ""
+		},
+		{
 			"name" : "PC_CURL_STATIC_LIBDIR",
 			"properties" : 
 			[
@@ -1712,6 +1820,30 @@
 			],
 			"type" : "INTERNAL",
 			"value" : ""
+		},
+		{
+			"name" : "PC_CURL_STATIC_LIBRARIES",
+			"properties" : 
+			[
+				{
+					"name" : "HELPSTRING",
+					"value" : ""
+				}
+			],
+			"type" : "INTERNAL",
+			"value" : "curl;nghttp2;idn2;rtmp;ssh;ssh;psl;nettle;gnutls;gssapi_krb5;lber;ldap;lber;zstd;brotlidec;z"
+		},
+		{
+			"name" : "PC_CURL_STATIC_LIBRARY_DIRS",
+			"properties" : 
+			[
+				{
+					"name" : "HELPSTRING",
+					"value" : ""
+				}
+			],
+			"type" : "INTERNAL",
+			"value" : "/usr/lib/x86_64-linux-gnu"
 		},
 		{
 			"name" : "PC_CURL_STATIC_LIBS",
@@ -1771,7 +1903,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : ""
+			"value" : "8.5.0"
 		},
 		{
 			"name" : "PC_CURL_libcurl_INCLUDEDIR",
@@ -2666,6 +2798,18 @@
 			"value" : "TRUE"
 		},
 		{
+			"name" : "__pkg_config_arguments_PC_CURL",
+			"properties" : 
+			[
+				{
+					"name" : "HELPSTRING",
+					"value" : ""
+				}
+			],
+			"type" : "INTERNAL",
+			"value" : "QUIET;libcurl"
+		},
+		{
 			"name" : "__pkg_config_arguments_PC_LIBXML",
 			"properties" : 
 			[
@@ -2714,6 +2858,22 @@
 			"value" : "1"
 		},
 		{
+			"name" : "pkgcfg_lib_PC_CURL_curl",
+			"properties" : 
+			[
+				{
+					"name" : "ADVANCED",
+					"value" : "1"
+				},
+				{
+					"name" : "HELPSTRING",
+					"value" : "Path to a library."
+				}
+			],
+			"type" : "FILEPATH",
+			"value" : "/usr/lib/x86_64-linux-gnu/libcurl.so"
+		},
+		{
 			"name" : "pkgcfg_lib_PC_LIBXML_xml2",
 			"properties" : 
 			[
@@ -2739,7 +2899,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "/usr/lib/x86_64-linux-gnu"
+			"value" : "AsynchDNS;GSS-API;HSTS;HTTP2;HTTPS-proxy;IDN;IPv6;Kerberos;Largefile;NTLM;PSL;SPNEGO;SSL;TLS-SRP;UnixSockets;alt-svc;brotli;libz;threadsafe;zstd"
 		},
 		{
 			"name" : "zstd_INCLUDE_DIR",

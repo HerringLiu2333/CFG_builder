@@ -15,6 +15,7 @@
 
 #include <memory>
 #include <system_error>
+#include <unordered_map>
 #include <vector>
 
 namespace cfgbuilder::frontend {
@@ -60,14 +61,31 @@ public:
 				&context,
 				buildOptions);
 
+			std::unordered_map<const clang::Stmt*, std::vector<int64_t>> stmtIdsByStmt;
+			std::unordered_map<const clang::Stmt*, std::vector<int64_t>> astNodeIdsByStmt;
+
 			llvm::json::Object functionJson;
 			functionJson["name"] = functionDecl->getNameAsString();
+			if (outputMode_ == JsonOutputMode::CfgOnly || outputMode_ == JsonOutputMode::AstAndCfg) {
+				functionJson["normalized_ir"] = cfgbuilder::output::CFGPrinter::BuildFunctionNormalizedIrJson(
+					*functionDecl,
+					cfg.get(),
+					context,
+					&stmtIdsByStmt);
+			}
 			if (outputMode_ == JsonOutputMode::AstOnly || outputMode_ == JsonOutputMode::AstAndCfg) {
-				functionJson["ast"] = cfgbuilder::output::CFGPrinter::BuildFunctionAstJson(*functionDecl, context);
+				functionJson["ast"] = cfgbuilder::output::CFGPrinter::BuildFunctionAstJson(
+					*functionDecl,
+					context,
+					&stmtIdsByStmt,
+					&astNodeIdsByStmt);
 			}
 			if (outputMode_ == JsonOutputMode::CfgOnly || outputMode_ == JsonOutputMode::AstAndCfg) {
-				functionJson["cfg"] = cfgbuilder::output::CFGPrinter::BuildFunctionCfgJson(*functionDecl, cfg.get(), context);
-				functionJson["normalized_ir"] = cfgbuilder::output::CFGPrinter::BuildFunctionNormalizedIrJson(*functionDecl, cfg.get(), context);
+				functionJson["cfg"] = cfgbuilder::output::CFGPrinter::BuildFunctionCfgJson(
+					*functionDecl,
+					cfg.get(),
+					context,
+					&astNodeIdsByStmt);
 			}
 			functionArray.push_back(std::move(functionJson));
 		}

@@ -111,6 +111,65 @@ std::string RenderStmt(const clang::Stmt* stmt, const clang::LangOptions& langOp
 	return rendered;
 }
 
+std::string GetOriginalText(
+	const clang::Stmt* stmt,
+	const clang::SourceManager& sourceManager,
+	const clang::LangOptions& langOptions) {
+	if (stmt == nullptr) {
+		return "";
+	}
+
+	const clang::CharSourceRange expandedRange = sourceManager.getExpansionRange(stmt->getSourceRange());
+	if (expandedRange.isInvalid()) {
+		return RenderStmt(stmt, langOptions);
+	}
+
+	const llvm::StringRef text = clang::Lexer::getSourceText(expandedRange, sourceManager, langOptions);
+	if (text.empty()) {
+		return RenderStmt(stmt, langOptions);
+	}
+	return text.str();
+}
+
+int64_t GetExpansionRangeLength(
+	const clang::Stmt* stmt,
+	const clang::SourceManager& sourceManager,
+	const clang::LangOptions& langOptions) {
+	if (stmt == nullptr) {
+		return -1;
+	}
+
+	const clang::CharSourceRange range = sourceManager.getExpansionRange(stmt->getSourceRange());
+	if (range.isInvalid()) {
+		return -1;
+	}
+
+	clang::SourceLocation beginLoc = range.getBegin();
+	clang::SourceLocation endLoc = range.getEnd();
+	if (beginLoc.isInvalid() || endLoc.isInvalid()) {
+		return -1;
+	}
+
+	if (sourceManager.getFileID(beginLoc) != sourceManager.getFileID(endLoc)) {
+		return -1;
+	}
+
+	if (range.isTokenRange()) {
+		const clang::SourceLocation tokenEnd =
+			clang::Lexer::getLocForEndOfToken(endLoc, 0, sourceManager, langOptions);
+		if (tokenEnd.isValid()) {
+			endLoc = tokenEnd;
+		}
+	}
+
+	const uint64_t beginOffset = sourceManager.getFileOffset(beginLoc);
+	const uint64_t endOffset = sourceManager.getFileOffset(endLoc);
+	if (endOffset < beginOffset) {
+		return -1;
+	}
+	return static_cast<int64_t>(endOffset - beginOffset);
+}
+
 std::string RenderBranchCondition(const clang::Stmt* stmt, const clang::LangOptions& langOptions) {
 	if (stmt == nullptr) {
 		return "<null-stmt>";
@@ -240,6 +299,7 @@ void AddUnique(std::vector<std::string>& values, const std::string& value) {
 struct VarRefInfo {
 	std::string name;
 	std::string varLoc;
+	std::string type;
 };
 
 void AddUniqueVarRef(std::vector<VarRefInfo>& values, const VarRefInfo& value) {
@@ -253,6 +313,13 @@ void AddUniqueVarRef(std::vector<VarRefInfo>& values, const VarRefInfo& value) {
 		}
 	}
 	values.push_back(value);
+}
+
+std::string GetValueDeclTypeString(const clang::ValueDecl* valueDecl) {
+	if (valueDecl == nullptr) {
+		return "";
+	}
+	return valueDecl->getType().getAsString();
 }
 
 class DeclRefCollector : public clang::RecursiveASTVisitor<DeclRefCollector> {
@@ -281,6 +348,7 @@ public:
 		VarRefInfo ref;
 		ref.name = declRefExpr->getNameInfo().getAsString();
 		ref.varLoc = GetLocationString(sourceManager_, declRefExpr->getLocation(), true);
+		ref.type = GetValueDeclTypeString(valueDecl);
 		AddUniqueVarRef(refs_, ref);
 		return true;
 	}
@@ -400,6 +468,7 @@ std::vector<VarRefInfo> CollectDefs(const clang::Stmt* stmt, const clang::Source
 				VarRefInfo ref;
 				ref.name = varDecl->getNameAsString();
 				ref.varLoc = GetLocationString(sourceManager, varDecl->getLocation(), true);
+				ref.type = varDecl->getType().getAsString();
 				AddUniqueVarRef(defs, ref);
 			}
 		}
@@ -491,9 +560,10 @@ llvm::json::Array BuildVarRefsJson(const std::vector<VarRefInfo>& refs) {
 	llvm::json::Array refsJson;
 	for (const VarRefInfo& ref : refs) {
 		llvm::json::Object refJson;
-		refJson["name"] = ref.name;
-		refJson["var_loc"] = ref.varLoc;
-		refsJson.push_back(std::move(refJson));
+			refJson["name"] = ref.name;
+			refJson["var_loc"] = ref.varLoc;
+			refJson["type"] = ref.type;
+			refsJson.push_back(std::move(refJson));
 	}
 	return refsJson;
 }
@@ -504,6 +574,8 @@ struct NormalizedStmtRef {
 	int64_t indexInBlock = -1;
 	bool isTerminator = false;
 };
+
+using StmtIdMap = std::unordered_map<const clang::Stmt*, std::vector<int64_t>>;
 
 struct ControlEdge {
 	int64_t from = -1;
@@ -586,11 +658,63 @@ struct ControlFlowContext {
 	std::string slot;
 };
 
+void AddStmtId(StmtIdMap& stmtIdsByStmt, const clang::Stmt* stmt, int64_t stmtId) {
+	if (stmt == nullptr || stmtId <= 0) {
+		return;
+	}
+
+	auto& stmtIds = stmtIdsByStmt[stmt];
+	if (std::find(stmtIds.begin(), stmtIds.end(), stmtId) == stmtIds.end()) {
+		stmtIds.push_back(stmtId);
+	}
+}
+
+void AddNodeId(StmtIdMap& astNodeIdsByStmt, const clang::Stmt* stmt, int64_t nodeId) {
+	if (stmt == nullptr || nodeId <= 0) {
+		return;
+	}
+
+	auto& nodeIds = astNodeIdsByStmt[stmt];
+	if (std::find(nodeIds.begin(), nodeIds.end(), nodeId) == nodeIds.end()) {
+		nodeIds.push_back(nodeId);
+	}
+}
+
+llvm::json::Array BuildStmtIdsJson(const clang::Stmt* stmt, const StmtIdMap* stmtIdsByStmt) {
+	llvm::json::Array stmtIdsJson;
+	if (stmtIdsByStmt == nullptr || stmt == nullptr) {
+		return stmtIdsJson;
+	}
+
+	auto it = stmtIdsByStmt->find(stmt);
+	if (it == stmtIdsByStmt->end()) {
+		return stmtIdsJson;
+	}
+
+	for (int64_t stmtId : it->second) {
+		stmtIdsJson.push_back(stmtId);
+	}
+	return stmtIdsJson;
+}
+
 llvm::json::Object BuildAstNodeJson(
 	const clang::Stmt* stmt,
 	const clang::ASTContext& context,
-	const ControlFlowContext* controlFlowContext) {
+	const ControlFlowContext* controlFlowContext,
+	int64_t nodeId,
+	int64_t parentId,
+	int64_t& nextNodeId,
+	const StmtIdMap* stmtIdsByStmt,
+	StmtIdMap* astNodeIdsByStmt,
+	const std::string& parentOriginalText,
+	int64_t parentOriginalLength) {
 	llvm::json::Object node;
+	node["node_id"] = nodeId;
+	node["parent_id"] = parentId;
+	node["stmt_ids"] = BuildStmtIdsJson(stmt, stmtIdsByStmt);
+	if (astNodeIdsByStmt != nullptr) {
+		AddNodeId(*astNodeIdsByStmt, stmt, nodeId);
+	}
 	if (stmt == nullptr) {
 		node["kind"] = "NullStmt";
 		node["location"] = "<invalid>";
@@ -599,6 +723,7 @@ llvm::json::Object BuildAstNodeJson(
 		node["start_line"] = -1;
 		node["end_line"] = -1;
 		node["text"] = "<null-stmt>";
+		node["original_text"] = "";
 		node["children"] = llvm::json::Array();
 		return node;
 	}
@@ -607,9 +732,20 @@ llvm::json::Object BuildAstNodeJson(
 	node["location"] = GetLocationString(context.getSourceManager(), stmt->getBeginLoc(), false);
 	node["spelling_loc"] = GetLocationString(context.getSourceManager(), stmt->getBeginLoc(), true);
 	node["expansion_loc"] = GetLocationString(context.getSourceManager(), stmt->getBeginLoc(), false);
-	node["start_line"] = GetStmtStartLine(context.getSourceManager(), stmt, true);
-	node["end_line"] = GetStmtEndLine(context.getSourceManager(), context.getLangOpts(), stmt, true);
+	node["start_line"] = GetStmtStartLine(context.getSourceManager(), stmt, false);
+	node["end_line"] = GetStmtEndLine(context.getSourceManager(), context.getLangOpts(), stmt, false);
 	node["text"] = RenderStmt(stmt, context.getLangOpts());
+	std::string originalText = GetOriginalText(stmt, context.getSourceManager(), context.getLangOpts());
+	const int64_t originalLength = GetExpansionRangeLength(stmt, context.getSourceManager(), context.getLangOpts());
+	if (!originalText.empty() &&
+		!parentOriginalText.empty() &&
+		originalText == parentOriginalText &&
+		parentOriginalLength >= 0 &&
+		originalLength >= 0 &&
+		parentOriginalLength >= originalLength) {
+		originalText.clear();
+	}
+	node["original_text"] = originalText;
 	if (controlFlowContext != nullptr) {
 		llvm::json::Object cfContext;
 		cfContext["owner"] = controlFlowContext->owner;
@@ -667,7 +803,20 @@ llvm::json::Object BuildAstNodeJson(
 			} else if (isForIncChild) {
 				childContext = &forIncContext;
 			}
-			children.push_back(BuildAstNodeJson(child, context, childContext));
+			const int64_t childNodeId = nextNodeId++;
+			const std::string& nextOriginalText = originalText.empty() ? parentOriginalText : originalText;
+			const int64_t nextOriginalLength = originalText.empty() ? parentOriginalLength : originalLength;
+			children.push_back(BuildAstNodeJson(
+				child,
+				context,
+				childContext,
+				childNodeId,
+				nodeId,
+				nextNodeId,
+				stmtIdsByStmt,
+				astNodeIdsByStmt,
+				nextOriginalText,
+				nextOriginalLength));
 		}
 	}
 	node["children"] = std::move(children);
@@ -678,7 +827,9 @@ llvm::json::Object BuildAstNodeJson(
 
 llvm::json::Object CFGPrinter::BuildFunctionAstJson(
 	const clang::FunctionDecl& functionDecl,
-	clang::ASTContext& context) {
+	clang::ASTContext& context,
+	const std::unordered_map<const clang::Stmt*, std::vector<int64_t>>* stmtIdsByStmt,
+	std::unordered_map<const clang::Stmt*, std::vector<int64_t>>* astNodeIdsByStmt) {
 	const clang::SourceManager& sourceManager = context.getSourceManager();
 	llvm::json::Object ast;
 	ast["function"] = functionDecl.getNameAsString();
@@ -686,6 +837,8 @@ llvm::json::Object CFGPrinter::BuildFunctionAstJson(
 	ast["location"] = GetLocationString(sourceManager, functionDecl.getLocation(), false);
 	ast["spelling_loc"] = GetLocationString(sourceManager, functionDecl.getLocation(), true);
 	ast["expansion_loc"] = GetLocationString(sourceManager, functionDecl.getLocation(), false);
+	ast["start_line"] = GetLine(sourceManager, functionDecl.getBeginLoc(), false);
+	ast["end_line"] = GetLine(sourceManager, functionDecl.getEndLoc(), false);
 
 	llvm::json::Array params;
 	for (unsigned i = 0; i < functionDecl.getNumParams(); ++i) {
@@ -697,14 +850,26 @@ llvm::json::Object CFGPrinter::BuildFunctionAstJson(
 	}
 	ast["params"] = std::move(params);
 
-	ast["body"] = BuildAstNodeJson(functionDecl.getBody(), context, nullptr);
+	int64_t nextNodeId = 2;
+	ast["body"] = BuildAstNodeJson(
+		functionDecl.getBody(),
+		context,
+		nullptr,
+		1,
+		-1,
+		nextNodeId,
+		stmtIdsByStmt,
+		astNodeIdsByStmt,
+		std::string(),
+		-1);
 	return ast;
 }
 
 llvm::json::Object CFGPrinter::BuildFunctionCfgJson(
 	const clang::FunctionDecl& functionDecl,
 	const clang::CFG* cfg,
-	clang::ASTContext& context) {
+	clang::ASTContext& context,
+	const std::unordered_map<const clang::Stmt*, std::vector<int64_t>>* astNodeIdsByStmt) {
 	(void)functionDecl;
 	llvm::json::Object cfgJson;
 	if (cfg == nullptr) {
@@ -756,6 +921,39 @@ llvm::json::Object CFGPrinter::BuildFunctionCfgJson(
 		} else {
 			b["terminator"] = nullptr;
 		}
+		std::vector<int64_t> astNodeIds;
+		if (astNodeIdsByStmt != nullptr) {
+			for (clang::CFGElement element : *block) {
+				if (auto cfgStmt = element.getAs<clang::CFGStmt>()) {
+					const clang::Stmt* stmt = cfgStmt->getStmt();
+					if (stmt == nullptr) {
+						continue;
+					}
+					auto it = astNodeIdsByStmt->find(stmt);
+					if (it == astNodeIdsByStmt->end()) {
+						continue;
+					}
+					for (int64_t nodeId : it->second) {
+						astNodeIds.push_back(nodeId);
+					}
+				}
+			}
+			if (const clang::Stmt* terminator = block->getTerminatorStmt()) {
+				auto it = astNodeIdsByStmt->find(terminator);
+				if (it != astNodeIdsByStmt->end()) {
+					for (int64_t nodeId : it->second) {
+						astNodeIds.push_back(nodeId);
+					}
+				}
+			}
+			std::sort(astNodeIds.begin(), astNodeIds.end());
+			astNodeIds.erase(std::unique(astNodeIds.begin(), astNodeIds.end()), astNodeIds.end());
+		}
+		llvm::json::Array astNodeIdsJson;
+		for (int64_t nodeId : astNodeIds) {
+			astNodeIdsJson.push_back(nodeId);
+		}
+		b["ast_node_ids"] = std::move(astNodeIdsJson);
 
 		llvm::json::Array stmts;
 		for (clang::CFGElement element : *block) {
@@ -775,7 +973,8 @@ llvm::json::Object CFGPrinter::BuildFunctionCfgJson(
 llvm::json::Object CFGPrinter::BuildFunctionNormalizedIrJson(
 	const clang::FunctionDecl& functionDecl,
 	const clang::CFG* cfg,
-	clang::ASTContext& context) {
+	clang::ASTContext& context,
+	std::unordered_map<const clang::Stmt*, std::vector<int64_t>>* stmtIdsByStmt) {
 	(void)functionDecl;
 	llvm::json::Object irJson;
 	irJson["version"] = "v1";
@@ -825,6 +1024,9 @@ llvm::json::Object CFGPrinter::BuildFunctionNormalizedIrJson(
 		for (const NormalizedStmtRef& ref : refs) {
 			orderedNodes.push_back(NodeRecord{nextStmtId, ref});
 			ids.push_back(nextStmtId);
+			if (stmtIdsByStmt != nullptr) {
+				AddStmtId(*stmtIdsByStmt, ref.stmt, nextStmtId);
+			}
 			if (!firstStmtIdInBlock.count(block)) {
 				firstStmtIdInBlock[block] = nextStmtId;
 			}
@@ -995,6 +1197,9 @@ llvm::json::Object CFGPrinter::BuildFunctionNormalizedIrJson(
 			}
 		}
 		node["ctrl_succ"] = std::move(succJson);
+		if (stmtIdsByStmt != nullptr) {
+			AddStmtId(*stmtIdsByStmt, ref.stmt, stmtId);
+		}
 
 		nodesJson.push_back(std::move(node));
 	}
